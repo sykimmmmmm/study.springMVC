@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.letech.study.cmmn.board.dao.BoardDAO">
+
+	<sql id="searchBoard">
+		<if test="boardTitle != null">
+			AND BOARD_TITLE LIKE CONCAT('%',#{boardTitle},'%')
+		</if>
+		<if test="rgstId != null">
+			AND RGST_ID LIKE CONCAT('%', #{rgstId}, '%')
+		</if>
+	</sql>
+	
+	<select id="selectBoardList" parameterType="boardVO" resultType="boardVO">
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.selectBoardList(boardVO) -- KSY */
+		SELECT BOARD_ID
+			 , BOARD_TITLE
+			 , RGST_ID
+			 , RGST_DT
+		  FROM TB_BOARD
+		 WHERE DEL_YN = 'N'
+		 <include refid="searchBoard"></include>
+	</select>
+	
+	<insert id="insertBoard" parameterType="boardVO" useGeneratedKeys="true">
+		<selectKey keyProperty="boardId" order="BEFORE" resultType="int">
+			SELECT IFNULL(MAX(BOARD_ID),0) + 1 FROM TB_BOARD
+		</selectKey>
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.insertBoard(boardVO) -- KSY */
+		INSERT INTO TB_BOARD (
+			  BOARD_ID
+			, BOARD_TITLE
+			, BOARD_CONTENT
+			<if test="fileGrpId != null">
+			, FILE_GRP_ID
+			</if>
+			, RGST_ID
+			, RGST_DT
+			, UPDT_ID
+			, UPDT_DT
+		)
+		VALUES (
+			  #{boardId}
+			, #{boardTitle}
+			, #{boardContent}
+			<if test="fileGrpId != null">
+			, #{fileGrpId}
+			</if>
+			, #{rgstId}
+			, NOW()
+			, #{rgstId}
+			, NOW()
+		)
+	</insert>
+	
+	<update id="updateBoard" parameterType="boardVO">
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.updateBoard -- KSY */
+		UPDATE TB_BOARD
+		   SET BOARD_TITLE = #{boardTitle}
+		     , BOARD_CONTENT = #{boardContent}
+		     <if test="fileGrpId != null">
+			 , FILE_GRP_ID = #{fileGrpId}
+			 </if>
+			 , UPDT_ID = #{updtId}
+			 , UPDT_DT = NOW()
+	     WHERE BOARD_ID = #{boardId}
+	</update>
+	
+	<update id="deleteReplyAll" parameterType="boardVO">
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.deleteReplyAll -- KSY */
+		UPDATE TB_BOARD_REPLY
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		 WHERE BOARD_ID = #{boardId}
+	</update>
+	
+	<update id="deleteBoard" parameterType="boardVO">
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.deleteBoard -- KSY */
+		UPDATE TB_BOARD
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		 WHERE BOARD_ID = #{boardId}
+	</update>
+	
+	<resultMap type="boardVO" id="boardMap">
+		<id property="boardId" column="BOARD_ID"/>
+		<result property="boardTitle" column="BOARD_title"/>
+		<result property="boardContent" column="BOARD_CONTENT"/>
+		<result property="rgstId" column="BOARD_RGST_ID"/>
+		<result property="rgstDt" column="BOARD_RGST_DT"/>
+		<result property="updtId" column="BOARD_UPDT_ID"/>
+		<result property="updtDt" column="BOARD_UPDT_DT"/>
+		<result property="fileGrpId" column="FILE_GRP_ID"/>
+		<collection property="fileList" resultMap="fileMap"/>
+		<collection property="replyList" resultMap="replyMap"/>
+	</resultMap>
+	<resultMap type="kr.letech.study.cmmn.file.vo.FileVO" id="fileMap">
+		<id property="fileGrpId" column="FILE_GRP_ID"/>
+		<id property="fileNo" column="FILE_NO"/>
+		<result property="fileOriginNm" column="FILE_ORIGIN_NM"/>
+		<result property="fileSaveNm" column="FILE_SAVE_NM"/>
+		<result property="fileSize" column="FILE_SIZE"/>
+		<result property="fileDiv" column="FILE_DIV"/>
+		<result property="rgstDt" column="FILE_RGST_DT"/>
+	</resultMap>
+	<resultMap type="replyVO" id="replyMap">
+		<id property="replyId" column="REPLY_ID"/>
+		<id property="boardId" column="REPLY_BOARD_ID"/>
+		<result property="replyContent" column="REPLY_CONTENT"/>
+		<result property="replyDepth" column="REPLY_DEPTH"/>
+		<result property="replyParentId" column="REPLY_PARENT_ID"/>
+		<result property="rgstId" column="REPLY_RGST_ID"/>
+		<result property="rgstDt" column="REPLY_RGST_DT"/>
+		<result property="updtId" column="REPLY_UPDT_ID"/>
+		<result property="updtDt" column="REPLY_UPDT_DT"/>
+		<result property="delYn" column="REPLY_DEL_YN"/>
+	</resultMap>
+	<select id="selectBoardOne" parameterType="int" resultMap="boardMap">
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.selectBoardOne -- KSY */
+		WITH RECURSIVE W_REPLY AS (
+			SELECT REPLY_ID
+			     , BOARD_ID
+			     , REPLY_CONTENT
+			     , REPLY_DEPTH
+			     , REPLY_PARENT_ID
+			     , RGST_ID
+			     , RGST_DT
+			     , UPDT_ID
+			     , UPDT_DT
+			     , DEL_YN
+			     , CAST(LPAD(REPLY_ID,5,'0') AS CHAR(500)) AS SORT
+			  FROM TB_BOARD_REPLY
+			 WHERE REPLY_PARENT_ID IS NULL
+			   AND BOARD_ID = #{boardId}
+			 UNION ALL
+			SELECT E.REPLY_ID
+			     , E.BOARD_ID
+			     , E.REPLY_CONTENT
+			     , E.REPLY_DEPTH
+			     , E.REPLY_PARENT_ID
+			     , E.RGST_ID
+			     , E.RGST_DT
+			     , E.UPDT_ID
+			     , E.UPDT_DT
+			     , E.DEL_YN
+			     , CONCAT(S.SORT, LPAD(E.REPLY_ID,5,'0')) AS SORT
+			  FROM TB_BOARD_REPLY E
+			 INNER JOIN W_REPLY S ON (E.REPLY_PARENT_ID = S.REPLY_ID)
+			 WHERE S.BOARD_ID = #{boardId}
+		)
+		SELECT A.BOARD_ID
+		     , A.BOARD_TITLE
+		     , A.BOARD_CONTENT
+		     , A.FILE_GRP_ID
+		     , A.RGST_ID AS BOARD_RGST_ID 
+		     , A.RGST_DT AS BOARD_RGST_DT 
+		     , A.UPDT_ID AS BOARD_UPDT_ID 
+		     , A.UPDT_DT AS BOARD_UPDT_DT
+		     , B.FILE_NO
+		     , B.FILE_ORIGIN_NM
+		     , B.FILE_SAVE_NM
+		     , B.FILE_SIZE
+		     , B.FILE_DIV
+		     , B.RGST_DT AS FILE_RGST_DT
+		     , C.REPLY_ID
+		     , C.BOARD_ID AS REPLY_BOARD_ID
+		     , C.REPLY_CONTENT
+		     , C.REPLY_DEPTH
+		     , C.REPLY_PARENT_ID
+		     , C.RGST_ID AS REPLY_RGST_ID
+		     , C.RGST_DT AS REPLY_RGST_DT
+		     , C.UPDT_ID AS REPLY_UPDT_ID
+		     , C.UPDT_DT AS REPLY_UPDT_DT
+		     , C.DEL_YN  AS REPLY_DEL_YN
+		  FROM TB_BOARD A
+		  LEFT OUTER JOIN CMMN_FILES B ON(A.FILE_GRP_ID = B.FILE_GRP_ID AND B.DEL_YN = 'N')
+		  LEFT OUTER JOIN W_REPLY C ON (A.BOARD_ID = C.BOARD_ID)
+		 WHERE A.BOARD_ID = #{boardId} 
+		 ORDER BY C.SORT
+	</select>
+	
+	<select id="selectBoardOnly" parameterType="int" resultMap="boardMap">
+		/** kr.letech.study.cmmn.board.dao.BoardDAO.selectBoardOnly -- KSY */
+		SELECT A.BOARD_ID
+		     , A.BOARD_TITLE
+		     , A.BOARD_CONTENT
+		     , A.FILE_GRP_ID
+		     , A.RGST_ID AS BOARD_RGST_ID 
+		     , A.RGST_DT AS BOARD_RGST_DT 
+		     , A.UPDT_ID AS BOARD_UPDT_ID 
+		     , A.UPDT_DT AS BOARD_UPDT_DT
+		     , B.FILE_NO
+		     , B.FILE_ORIGIN_NM
+		     , B.FILE_SAVE_NM
+		     , B.FILE_SIZE
+		     , B.FILE_DIV
+		     , B.RGST_DT AS FILE_RGST_DT
+		  FROM TB_BOARD A
+		  LEFT OUTER JOIN CMMN_FILES B ON(A.FILE_GRP_ID = B.FILE_GRP_ID AND B.DEL_YN = 'N')
+		 WHERE A.BOARD_ID = #{boardId}
+	</select>
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.letech.study.cmmn.board.dao.ReplyDAO">
+	
+	<insert id="insertReply" parameterType="replyVO" useGeneratedKeys="true">
+		/** kr.letech.study.cmmn.board.dao.ReplyDAO.insertReply -- KSY */
+		<selectKey keyProperty="replyId" order="BEFORE" resultType="int">
+			SELECT NULLIF(MAX(REPLY_ID),0)+1 FROM TB_BOARD_REPLY
+		</selectKey>		
+		INSERT INTO TB_BOARD_REPLY 
+		(
+			  REPLY_ID
+			, BOARD_ID  
+			, REPLY_CONTENT
+			, REPLY_DEPTH
+			<if test="replyParentId != null and replyParentId != 0">
+			, REPLY_PARENT_ID
+			</if>
+			, RGST_ID
+			, RGST_DT
+			, UPDT_ID
+			, UPDT_DT
+		)
+		VALUES
+		(
+			  #{replyId}
+			, #{boardId}
+			, #{replyContent}
+			, #{replyDepth}
+			<if test="replyParentId != null and replyParentId != 0">
+			, #{replyParentId}
+			</if>
+			, #{rgstId}
+			, NOW()
+			, #{rgstId}
+			, NOW() 		
+		)
+	</insert>
+	
+	<update id="deleteReplyAll" parameterType="boardVO">
+		/** kr.letech.study.cmmn.board.dao.ReplyDAO.insertReply -- KSY */
+		UPDATE TB_BOARD_REPLY
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		 WHERE BOARD_ID = #{boardId}
+	</update>
+	
+	<update id="updateReply" parameterType="replyVO">
+		/** kr.letech.study.cmmn.board.dao.ReplyDAO.updateReply -- KSY */
+		UPDATE TB_BOARD_REPLY
+		   SET REPLY_CONTENT = #{replyContent}
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		 WHERE REPLY_ID = #{replyId}
+		   AND BOARD_ID = #{boardId}
+	</update>
+	
+	<update id="deleteReplyOne" parameterType="replyVO">
+		/** kr.letech.study.cmmn.board.dao.ReplyDAO.deleteReplyOne -- KSY */
+		UPDATE TB_BOARD_REPLY
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+	     WHERE REPLY_ID = #{replyId}
+		   AND BOARD_ID = #{boardId} 
+	</update>
+</mapper>

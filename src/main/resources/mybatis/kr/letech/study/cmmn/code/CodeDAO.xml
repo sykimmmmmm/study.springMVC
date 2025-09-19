@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.letech.study.cmmn.code.dao.CodeDAO">
+
+	<select id="selectCodeList" resultType="kr.letech.study.cmmn.code.vo.CodeVO">
+		/*kr.letech.study.cmmn.code.dao.CodeDAO.selectCodeList -- KSY*/
+		SELECT CD
+			 , CD_NM
+		  FROM TB_CD
+		 WHERE CD_GRP = #{CD_GRP}
+		   AND DEL_YN = 'N'
+	</select>
+</mapper>

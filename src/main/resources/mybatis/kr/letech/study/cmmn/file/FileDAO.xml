@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.letech.study.cmmn.file.dao.FileDAO">
+
+	<insert id="insertFile" parameterType="kr.letech.study.cmmn.file.vo.FileVO">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.insertFile */
+		<selectKey keyProperty="fileNo" order="BEFORE" resultType="int">
+			SELECT IFNULL(MAX(FILE_NO),0) + 1 
+			  FROM CMMN_FILES 
+			 WHERE FILE_GRP_ID = #{fileGrpId} 
+		</selectKey>
+		INSERT INTO CMMN_FILES
+		(
+			  FILE_GRP_ID
+			, FILE_NO
+			, FILE_ORIGIN_NM
+			, FILE_SAVE_NM
+			, FILE_SIZE
+			, FILE_DIV
+			, RGST_ID
+			, RGST_DT
+			, UPDT_ID
+			, UPDT_DT
+			, DEL_YN
+		)
+		VALUES
+		(
+			  #{fileGrpId}
+			, #{fileNo}
+			, #{fileOriginNm}
+			, #{fileSaveNm}
+			, #{fileSize}
+			, #{fileDiv}
+			, #{rgstId}
+			, NOW()
+			, #{updtId}
+			, NOW()
+			, 'N'			
+		)
+	</insert>
+	
+	<select id="selectFileOne" parameterType="kr.letech.study.cmmn.file.vo.FileVO" resultType="kr.letech.study.cmmn.file.vo.FileVO">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.selectFileOne */
+		SELECT FILE_GRP_ID
+			 , FILE_NO
+			 , FILE_ORIGIN_NM
+			 , FILE_SAVE_NM
+			 , FILE_SIZE
+			 , FILE_DIV
+			 , RGST_DT
+		  FROM CMMN_FILES
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND FILE_NO = #{fileNo}
+		   AND DEL_YN = 'N'
+	</select>
+	
+	<select id="selectFileAll" parameterType="string" resultType="kr.letech.study.cmmn.file.vo.FileVO">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.selectFileAll */
+		SELECT FILE_GRP_ID
+			 , FILE_NO
+		  FROM CMMN_FILES
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND DEL_YN = 'N'
+	</select>
+	
+	<update id="deleteFileOne" parameterType="kr.letech.study.cmmn.file.vo.FileVO">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.deleteFileOne */
+		UPDATE CMMN_FILES
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND FILE_NO = #{fileNo}
+	</update>
+	
+	<update id="deleteFileAll" parameterType="kr.letech.study.cmmn.file.vo.FileVO">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.deleteFileAll */
+		UPDATE CMMN_FILES
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+	</update>
+</mapper>

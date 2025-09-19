@@ -91,13 +91,29 @@ public class BoardServiceImpl implements IBoardService{
 	@Transactional
 	@Override
 	public int deleteBoard(BoardVO boardVO) {
-		if(StringUtils.isNotBlank(boardVO.getFileGrpId())) {
-			fileService.deleteFileAll(boardVO.getFileGrpId());
+		int status = 0;
+		int[] boardDeleteNos = boardVO.getDeleteBoardNos();
+		// 목록 리스트에서 게시글 삭제
+		if(boardDeleteNos != null && boardDeleteNos.length > 0) {
+			BoardVO vo = new BoardVO();
+			for(int boardId : boardDeleteNos) {
+				vo = this.selectBoardOnly(boardId);
+				if(vo != null) {
+					status = this.deleteBoard(vo);
+				}
+			}
+		// 상세 페이지에서 삭제
+		}else {
+			
+			if(StringUtils.isNotBlank(boardVO.getFileGrpId())) {
+				fileService.deleteFileAll(boardVO.getFileGrpId());
+			}
+			boardVO.setUpdtId(UserUtils.getUserId());
+			replyService.deleteReplyAll(boardVO);
+			status = boardDAO.deleteBoard(boardVO);
 		}
-		boardVO.setUpdtId(UserUtils.getUserId());
-		replyService.deleteReplyAll(boardVO);
 		
-		return boardDAO.deleteBoard(boardVO);
+		return status;
 	}
 	
 	@Override

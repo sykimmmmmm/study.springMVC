@@ -16,6 +16,7 @@
 		/** kr.letech.study.cmmn.board.dao.BoardDAO.selectBoardList(boardVO) -- KSY */
 		SELECT BOARD_ID
 			 , BOARD_TITLE
+			 , FILE_GRP_ID
 			 , RGST_ID
 			 , RGST_DT
 		  FROM TB_BOARD

@@ -31,6 +31,7 @@ public class BoardVO extends BaseTableVO{
 	private String boardContent;
 	private String fileGrpId;
 	
+	private int[] deleteBoardNos;
 	private MultipartFile[] boFiles;
 	private List<Integer> deleteFileNoList; 
 	private List<FileVO> fileList;

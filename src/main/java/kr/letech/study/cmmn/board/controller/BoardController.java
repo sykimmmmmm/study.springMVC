@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import kr.letech.study.cmmn.board.service.IBoardService;
 import kr.letech.study.cmmn.board.vo.BoardVO;
 import kr.letech.study.cmmn.sec.aop.AuthCheck;
-import kr.letech.study.cmmn.user.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardController {
 
 	private final IBoardService boardService;
-	private final IUserService userService;
 	
 	@AuthCheck
 	@RequestMapping(value = "/boardList.do", method = RequestMethod.GET)

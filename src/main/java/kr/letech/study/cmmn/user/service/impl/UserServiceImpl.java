@@ -53,19 +53,22 @@ public class UserServiceImpl implements IUserService {
 	@Override
 	public int insertUser(UserVO userVO){
 		int status = 0;
-		
+		// 입력받은 비밀번호 암호화처리 후 셋팅
 		String encodedPw = passwordEncoder.encode(userVO.getUserPw());
 		userVO.setUserPw(encodedPw);
 		
 		try {
+			// 파일 존재할시 파일 등록 후 fileGrpId 맵핑
 			MultipartFile[] boFiles = userVO.getBoFiles();
 			if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
 				String fileGrpId = fileService.insertFile(boFiles,null,this.FILE_DIV);
 				userVO.setFileGrpId(fileGrpId);
 			}
 				
+			// 유저 정보 등록
 			status = userDAO.insertUser(userVO);
 			
+			// 체크된 권한 가져와서 등록하기
 			List<String> authList = userVO.getAuthList();
 			if(!authList.isEmpty() || authList.size() > 0) {
 				//권한 등록혹은 업데이트
@@ -95,25 +98,31 @@ public class UserServiceImpl implements IUserService {
 	@Override
 	public int updateUser(UserVO userVO) {
 		int status = 0;
-		MultipartFile[] boFiles = userVO.getBoFiles();
-		log.info("boFiles : {}",boFiles);
-		if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
-			if(StringUtils.isNotBlank(userVO.getDeleteFileNo())) {
-				FileVO fileVO = new FileVO();
-				fileVO.setFileGrpId(userVO.getFileGrpId());
-				fileVO.setFileNo(Integer.parseInt(userVO.getDeleteFileNo()));
-				fileVO.setUpdtId(userVO.getUserId());
-				fileService.deleteFileOne(fileVO);
-			}
-			String fileGrpId = fileService.insertFile(boFiles, userVO.getFileGrpId(), FILE_DIV);
-			userVO.setFileGrpId(fileGrpId);
-		}
-		if(StringUtils.isNotBlank(userVO.getUserPw())) {
-			String encodedPw = this.passwordEncoder.encode(userVO.getUserPw());
-			userVO.setUserPw(encodedPw);
-		}
 		try {
+			// 업로드할 파일 이 있는지 확인 후 기존 파일 삭제 및 신규 파일 등록
+			MultipartFile[] boFiles = userVO.getBoFiles();
+			log.info("boFiles : {}",boFiles);
+			if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
+				// 기존에 존재하던 파일이 있는경우 파일 삭제
+				if(StringUtils.isNotBlank(userVO.getDeleteFileNo())) {
+					FileVO fileVO = new FileVO();
+					fileVO.setFileGrpId(userVO.getFileGrpId());
+					fileVO.setFileNo(Integer.parseInt(userVO.getDeleteFileNo()));
+					fileVO.setUpdtId(userVO.getUserId());
+					fileService.deleteFileOne(fileVO);
+				}
+				String fileGrpId = fileService.insertFile(boFiles, userVO.getFileGrpId(), FILE_DIV);
+				userVO.setFileGrpId(fileGrpId);
+			}
+			
+			// 비밀번호를 새로 입력했을 경우 암호화처리
+			if(StringUtils.isNotBlank(userVO.getUserPw())) {
+				String encodedPw = this.passwordEncoder.encode(userVO.getUserPw());
+				userVO.setUserPw(encodedPw);
+			}
+			// 유저 정보 업데이트
 			status = userDAO.updateUser(userVO);
+			// 유저 권한 업데이트
 			List<String> authList = userVO.getAuthList();
 			if(!authList.isEmpty() || authList.size() > 0) {
 				
@@ -144,8 +153,11 @@ public class UserServiceImpl implements IUserService {
 		try {
 			userVO.setUpdtId(userVO.getUserId());
 			String fileGrpId = userVO.getFileGrpId();
+			// 파일 삭제
 			fileService.deleteFileAll(fileGrpId);
+			// 권한 삭제
 			userDAO.deleteUserAuth(userVO);
+			// 유저 정보 삭제
 			status = userDAO.deleteUser(userVO);
 		} catch (Exception e) {
 			status = -1;

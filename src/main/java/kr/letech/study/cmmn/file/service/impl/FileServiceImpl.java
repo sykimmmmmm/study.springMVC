@@ -47,6 +47,12 @@ public class FileServiceImpl implements IFileService {
 	private final FileDAO fileDAO;
 	
 	
+	/**
+	 * 파일을 특정위치에 저장 후 DB에 등록
+	 * @param boFiles 클라이언트에서 보내진 파일배열
+	 * @param fileGroupId 파일그룹아이디(없을시 Null)
+	 * @param fileDiv 해당 파일을 저장하는 폴더를 구분하기위한 폴더명 
+	 */
 	@Override
 	public String insertFile(MultipartFile[] boFiles,String fileGroupId, String fileDiv) {
 		String uploadPath = basePath + "/" + fileDiv + "/" +dateFormat.format(new Date());
@@ -56,7 +62,8 @@ public class FileServiceImpl implements IFileService {
 		if(!directory.exists()) {
 			directory.mkdirs();
 		}
-		
+		// fileGroupId 가 NULL로 들어오면 가지고있는 fileGroupId 가 존재하지 않음
+		// fileGroupId 신규 생성
 		if(StringUtils.isBlank(fileGroupId)) {
 			fileGrpId = UUID.randomUUID().toString();
 			
@@ -91,6 +98,10 @@ public class FileServiceImpl implements IFileService {
 	}
 	
 	
+	/**
+	 * 파일 그룹번호에 해당하는 모든 파일 논리삭제
+	 * @param fileGrpId
+	 */
 	@Override
 	public void deleteFileAll(String fileGrpId) {
 		FileVO fileVO = new FileVO();
@@ -100,7 +111,8 @@ public class FileServiceImpl implements IFileService {
 	}
 	
 	/**
-	 * @param fileVO
+	 * fileGrpId, fileNo을 이용 특정 파일 논리삭제
+	 * @param fileVO (fileGrpId, fileNo)
 	 */
 	@Override
 	public void deleteFileOne(FileVO fileVO) {
@@ -108,20 +120,32 @@ public class FileServiceImpl implements IFileService {
 		fileDAO.deleteFileOne(fileVO);
 	}
 
+	/**
+	 * 해당 파일그룹번호에 속한 모든 파일 가져오기
+	 * @param fileGrpId 파일그룹번호
+	 */
 	@Override
 	public FileVO selectFileAll(String fileGrpId) {
 		return fileDAO.selectFileAll(fileGrpId);
 	}
 	
+	/**
+	 * fileGrpId, fileNo을 이용 특정 파일 가져오기
+	 * @param fileVO (fileGrpId, fileNo)
+	 */
 	@Override
 	public FileVO selectFileOne(FileVO fileVO) {
 		return fileDAO.selectFileOne(fileVO);
 	}
 
+	/**
+	 * 특정 파일이 존재하고있는 경로 생성
+	 * @param fileVO (fileDiv, rgstDt, fileSaveNm)
+	 */
 	@Override
 	public String makeFilePath(FileVO fileVO) {
 		StringBuilder sb = new StringBuilder();
-		log.info("rgst_dt : {}",fileVO.getRgstDt());
+//		log.info("rgst_dt : {}",fileVO.getRgstDt());
 		try {
 			sb.append(this.basePath)
 			  .append("/")
@@ -133,7 +157,7 @@ public class FileServiceImpl implements IFileService {
 		} catch (ParseException e) {
 			return null;
 		}
-		log.info(sb.toString());
+//		log.info(sb.toString());
 		
 		return sb.toString();
 	}

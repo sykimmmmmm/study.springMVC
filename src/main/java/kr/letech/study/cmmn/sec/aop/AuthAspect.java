@@ -27,6 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthAspect {
 	
+	/**
+	 * Authentication속 Principal객체를 통해 userVO 정보가 없으면 비로그인, 있으면 로그인
+	 * @param pjp
+	 * @return userVO정보가 없으면 메인페이지로 이동, 있으면 통과
+	 * @throws Throwable
+	 */
 	@Around("@annotation(kr.letech.study.cmmn.sec.aop.AuthCheck)")
 	public Object checkAuth(ProceedingJoinPoint pjp) throws Throwable {
 		String methodName = pjp.getSignature().getName();

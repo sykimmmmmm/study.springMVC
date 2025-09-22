@@ -108,7 +108,8 @@
 	const imgUpdtBtn = document.getElementById("imgUpdtBtn");
 	const imgResetBtn = document.getElementById("imgResetBtn");
 	let imgSrcBak = "";
-	if("${userVO.fileVO}" != null){
+	if("${userVO.fileVO}" != ""){
+		console.log("${userVO.fileVO}")
 		imgSrcBak = "${CONTEXT_PATH}/cmmn/file/view.do?fileGrpId=${userVO.fileVO.fileGrpId}&fileNo=${userVO.fileVO.fileNo}"
 	}
 	

@@ -19,7 +19,7 @@
 .SideBar{
 	width: 10%;
 /* 	height: 600px; */
-	height: 80vh;
+	height: 73vh;
 	background-color: #FFBB00;
 	float: left;
 }
@@ -27,7 +27,7 @@
 .page_content{
 	width: 90%;
 /* 	height: 600px; */
-	height: 80vh;
+	height: 73vh;
 	background-color: #EAEAEA;
 	float: left;
 }

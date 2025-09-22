@@ -35,6 +35,7 @@ public class ReplyServiceImpl implements IReplyService {
 	@Transactional
 	@Override
 	public void insertReply(ReplyVO replyVO) {
+		// 댓글 삽입
 		replyVO.setRgstId(UserUtils.getUserId());
 		replyDAO.insertReply(replyVO);
 	}

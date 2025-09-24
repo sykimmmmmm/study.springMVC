@@ -34,8 +34,8 @@ public class ReplyController {
 	@RequestMapping(value = "/insertReply.do", method = RequestMethod.POST)
 	public String insertReply(ReplyVO replyVO) {
 		log.info("댓글 작성 -> {}", replyVO);
-		replyService.insertReply(replyVO);
 		
+		replyService.insertReply(replyVO);
 		
 		return "redirect:/cmmn/board/boardDetail.do?boardId="+replyVO.getBoardId();
 	}

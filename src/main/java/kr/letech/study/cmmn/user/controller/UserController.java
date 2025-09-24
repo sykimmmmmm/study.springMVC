@@ -5,7 +5,6 @@ package kr.letech.study.cmmn.user.controller;
 
 import java.util.List;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,21 +64,9 @@ public class UserController {
 	@RequestMapping(value="/userRegister.do", method = RequestMethod.POST)
 	public String userRegister(UserVO userVO, Model model) {
 		log.info("등록요청 userVO -> {}",userVO);
-		String path = null;
 		
-		int status = userService.insertUser(userVO);
-		
-		if(status > 0) {
-			path = "redirect:/";
-		}else {
-			List<CodeVO> codeList = codeService.selectCodeList("AUTH");
-			
-			model.addAttribute("codeList", codeList);
-			model.addAttribute("msg", "등록처리 중 오류가 발생했습니다.");
-			path = "cmmn/user/userRegisterForm.tiles";
-		}
-		
-		return path;
+		userService.insertUser(userVO);
+		return "redirect:/";
 	}
 	
 	@AuthCheck
@@ -108,35 +95,18 @@ public class UserController {
 	@RequestMapping(value="/userUpdate.do", method = RequestMethod.POST)
 	public String userUpdate(UserVO userVO, Model model) {
 		log.info("업데이트 로직 userVO -> {}", userVO);
-		String path = null;
+		userService.updateUser(userVO);
 		
-		int status = userService.updateUser(userVO);
-		if(status > 0) {
-			path = "redirect:/cmmn/user/userDetail.do?userId="+userVO.getUserId();
-		}else {
-			model.addAttribute("userVO", userVO);
-			model.addAttribute("msg", "수정 처리 중 오류가 발생했습니다.");
-			path = "cmmn/user/userUpdateForm.tiles";
-		}
-		
-		return path;
+		return "redirect:/cmmn/user/userDetail.do?userId="+userVO.getUserId();
 	}
 	
 	@RequestMapping(value="/userDelete.do", method = RequestMethod.POST)
 	public String userDelete(UserVO userVO, RedirectAttributes ra) {
 		log.info("논리적 삭제 로직 userVO -> {}", userVO);
-		String path = null;
 		// 리뷰 - 논리적 삭제여서 update지만 의미를 명확하게 하기위해 delete문구를 사용하는게 좋다
-		int status = userService.deleteUser(userVO);
-		if(status > 0) {
-			SecurityContextHolder.clearContext();
-			path = "redirect:/";
-		}else {
-			ra.addFlashAttribute("msg", "삭제 처리 중 오류가 발생했습니다");
-			path = "redirect:/cmmn/user/userDetail.do?userId="+userVO.getUserId();
-		}
+		userService.deleteUser(userVO);
 		
-		return path;
+		return "redirect:/";
 	}
 	
 }

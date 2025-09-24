@@ -32,7 +32,7 @@ public interface IUserService {
 	 * @param userVO
 	 * @return
 	 */
-	int insertUser(UserVO userVO);
+	void insertUser(UserVO userVO);
 
 	/**
 	 * @param targetVO
@@ -44,13 +44,13 @@ public interface IUserService {
 	 * @param userVO
 	 * @return
 	 */
-	int updateUser(UserVO userVO);
+	void updateUser(UserVO userVO);
 
 	/**
 	 * @param userVO
 	 * @return
 	 */
-	int deleteUser(UserVO userVO);
+	void deleteUser(UserVO userVO);
 
 	/**
 	 * 로그인기능이없어서 만드는 임시기능

@@ -4,7 +4,11 @@
 package kr.letech.study.cmmn.file.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,8 +16,13 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -139,11 +148,94 @@ public class FileServiceImpl implements IFileService {
 	}
 
 	/**
+	 * fileGrpId, fileNo을 이용해서 특정 파일 다운로드
+	 */
+	@Override
+	public ResponseEntity<byte[]> downloadFile(FileVO fileVO) {
+		InputStream in = null;
+		
+		try {
+			FileVO targetVO = this.selectFileOne(fileVO);
+			// 해당 파일 db에 존재하지않음
+			if(targetVO == null) {
+				return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
+			}
+			
+			String filePath = this.makeFilePath(targetVO);
+			String originNm = targetVO.getFileOriginNm();
+			
+			File file = new File(filePath);
+			// 해당 파일 물리적 존재 x
+			if(!file.exists()) {
+				return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
+			}
+			// 해당 파일 mimetype 찾기
+			int dotIndex = originNm.lastIndexOf('.');
+			
+			String formatName = "";
+			
+			if(dotIndex != -1) {
+				formatName = originNm.substring(dotIndex+1).toLowerCase();
+			}
+			
+			MediaType mType = this.getMediaType(formatName);
+			
+			// 파일 읽어오기
+			in = new FileInputStream(file);
+			// 글자깨짐 방지용 인코딩
+			String encodedFileName = URLEncoder.encode(originNm, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+			
+			// 헤더 정보 설정
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(mType);
+			headers.add("Content-Disposition", "attachment; filename=\""+ encodedFileName + "\"");
+			headers.setContentLength(file.length());
+			
+			return new ResponseEntity<byte[]>(IOUtils.toByteArray(in),headers,HttpStatus.OK);
+		} catch (IOException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} finally {
+			if(in != null) {
+				IOUtils.closeQuietly(in);
+			}
+		}
+	}
+	
+	/**
+	 * fileGrpId, fileNo을 이용해서 이미지 파일 정보 불러오기
+	 */
+	@Override
+	public ResponseEntity<byte[]> imagePreview(FileVO fileVO) {
+		ResponseEntity<byte[]> entity = null;
+		InputStream in = null;
+		try {
+			FileVO targetVO = this.selectFileOne(fileVO);
+			if(targetVO != null) {
+				String path = this.makeFilePath(targetVO);
+				File file = new File(path);
+				if(!file.exists()) {
+					entity = new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
+				}else {
+					HttpHeaders headers = new HttpHeaders();
+					headers.setContentType(MediaType.IMAGE_PNG);
+					
+					in = new FileInputStream(file);
+					
+					entity = new ResponseEntity<byte[]>(IOUtils.toByteArray(in),headers,HttpStatus.OK);
+				}
+			}
+		} catch (IOException e) {
+			log.debug(e.getMessage());
+			entity = new ResponseEntity<byte[]>(HttpStatus.INTERNAL_SERVER_ERROR);		
+		}
+		return entity;
+	}
+	
+	/**
 	 * 특정 파일이 존재하고있는 경로 생성
 	 * @param fileVO (fileDiv, rgstDt, fileSaveNm)
 	 */
-	@Override
-	public String makeFilePath(FileVO fileVO) {
+	private String makeFilePath(FileVO fileVO) {
 		StringBuilder sb = new StringBuilder();
 //		log.info("rgst_dt : {}",fileVO.getRgstDt());
 		try {
@@ -162,4 +254,32 @@ public class FileServiceImpl implements IFileService {
 		return sb.toString();
 	}
 	
+	/**
+	 * 확장자에 따라 미디어타입 가져오기
+	 * 모르면 MediaType.APPLICATION_OCTET_STREAM 반환
+	 * @param formatName
+	 * @return
+	 */
+	private MediaType getMediaType(String formatName) {
+		if(formatName != null && !formatName.isEmpty()) {
+			formatName = formatName.toLowerCase();
+			switch (formatName) {
+				case "jpg":
+				case "jpeg": return MediaType.IMAGE_JPEG;
+				case "png":  return MediaType.IMAGE_PNG;
+				case "gif":  return MediaType.IMAGE_GIF;
+				case "pdf":  return MediaType.APPLICATION_PDF;
+				case "doc":
+				case "docx": return MediaType.valueOf("application/msword"); // MS Word
+				case "xls":
+				case "xlsx": return MediaType.valueOf("application/vnd.ms-excel"); // MS Excel
+				case "ppt":
+				case "pptx": return MediaType.valueOf("application/vnd.ms-powerpoint"); // MS PowerPoint
+				case "zip":  return MediaType.valueOf("application/zip"); // ZIP 압축 파일
+				case "txt":  return MediaType.valueOf("text/plain"); // 텍스트 파일
+				default : return MediaType.APPLICATION_OCTET_STREAM;
+			}
+		}
+		return MediaType.APPLICATION_OCTET_STREAM;
+	}
 }

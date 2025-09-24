@@ -3,6 +3,7 @@
  */
 package kr.letech.study.cmmn.file.service;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.letech.study.cmmn.file.vo.FileVO;
@@ -29,12 +30,6 @@ public interface IFileService {
 	String insertFile(MultipartFile[] boFiles, String fileGroupId, String fileDiv);
 
 	/**
-	 * @param fileVO
-	 * @return
-	 */
-	String makeFilePath(FileVO fileVO);
-
-	/**
 	 * @param fileVO (fileGrpId, fileNo)
 	 * @return
 	 */
@@ -55,5 +50,17 @@ public interface IFileService {
 	 * @param fileVO (fileGrpId, fileNo)
 	 */
 	void deleteFileOne(FileVO fileVO);
+
+	/**
+	 * @param fileVO
+	 * @return
+	 */
+	ResponseEntity<byte[]> downloadFile(FileVO fileVO);
+
+	/**
+	 * @param fileVO
+	 * @return
+	 */
+	ResponseEntity<byte[]> imagePreview(FileVO fileVO);
 
 }

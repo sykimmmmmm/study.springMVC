@@ -67,7 +67,7 @@ public class BoardServiceImpl implements IBoardService{
 	 */
 	@Transactional
 	@Override
-	public int insertBoard(BoardVO boardVO) {
+	public void insertBoard(BoardVO boardVO) {
 		MultipartFile[] boFiles = boardVO.getBoFiles();
 		// 파일이 있거나 해당파일의 이름이 '' 이 아닐시 파일서비스 호출 후 파일 그룹번호 반환하기 
 		if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
@@ -75,7 +75,7 @@ public class BoardServiceImpl implements IBoardService{
 			boardVO.setFileGrpId(fileGrpId);
 		}
 		
-		return boardDAO.insertBoard(boardVO);
+		boardDAO.insertBoard(boardVO);
 	}
 	
 	/**
@@ -84,7 +84,7 @@ public class BoardServiceImpl implements IBoardService{
 	 */
 	@Transactional
 	@Override
-	public int updateBoard(BoardVO boardVO) {
+	public void updateBoard(BoardVO boardVO) {
 		List<Integer> deleteFileNoList = boardVO.getDeleteFileNoList();
 		// 특정 파일 삭제
 		if(deleteFileNoList != null && !deleteFileNoList.isEmpty()) {
@@ -102,7 +102,7 @@ public class BoardServiceImpl implements IBoardService{
 			boardVO.setFileGrpId(fileGrpId);
 		}
 		boardVO.setUpdtId(UserUtils.getUserId());
-		return boardDAO.updateBoard(boardVO);
+		boardDAO.updateBoard(boardVO);
 	}
 	
 	/**
@@ -111,8 +111,7 @@ public class BoardServiceImpl implements IBoardService{
 	 */
 	@Transactional
 	@Override
-	public int deleteBoard(BoardVO boardVO) {
-		int status = 0;
+	public void deleteBoard(BoardVO boardVO) {
 		int[] boardDeleteNos = boardVO.getDeleteBoardNos();
 		// 목록 리스트에서 게시글 삭제
 		if(boardDeleteNos != null && boardDeleteNos.length > 0) {
@@ -120,7 +119,7 @@ public class BoardServiceImpl implements IBoardService{
 			for(int boardId : boardDeleteNos) {
 				vo = this.selectBoardOnly(boardId);
 				if(vo != null) {
-					status = this.deleteBoard(vo);
+					this.deleteBoard(vo);
 				}
 			}
 		// 상세 페이지에서 삭제
@@ -131,10 +130,9 @@ public class BoardServiceImpl implements IBoardService{
 			}
 			boardVO.setUpdtId(UserUtils.getUserId());
 			replyService.deleteReplyAll(boardVO);
-			status = boardDAO.deleteBoard(boardVO);
+			boardDAO.deleteBoard(boardVO);
 		}
 		
-		return status;
 	}
 	
 	/**

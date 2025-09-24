@@ -41,5 +41,16 @@
 
 </body>
 <script type="text/javascript">
+$(function(){
+	$("table").css("border","1px solid black").css("borderCollapse","collapse").css("width","500px");
+	$("td").filter(function(i){
+		return i % 5 == 0
+	}).css("text-align","center");
+	$("tr:odd td").css("borderLeft","1px solid black")
+	$("tr:even td").css("borderLeft","1px solid black")
+	$("tr").filter(":odd").css("background","skyblue");
+	$("tr").filter(":even").css("background","pink");
+	$("tr").eq(0).css("background","#555").css("color","white");
+})
 </script>
 </html>

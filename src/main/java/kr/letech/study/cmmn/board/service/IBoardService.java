@@ -31,7 +31,7 @@ public interface IBoardService {
 	 * @param boardVO
 	 * @return
 	 */
-	int insertBoard(BoardVO boardVO);
+	void insertBoard(BoardVO boardVO);
 
 	/**
 	 * 해당 게시글정보 가져오기 댓글 o
@@ -51,12 +51,12 @@ public interface IBoardService {
 	 * @param boardVO
 	 * @return
 	 */
-	int updateBoard(BoardVO boardVO);
+	void updateBoard(BoardVO boardVO);
 
 	/**
 	 * @param boardVO
 	 * @return
 	 */
-	int deleteBoard(BoardVO boardVO);
+	void deleteBoard(BoardVO boardVO);
 
 }

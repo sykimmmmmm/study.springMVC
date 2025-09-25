@@ -33,7 +33,7 @@ public class BoardVO extends BaseTableVO{
 	
 	private int[] deleteBoardNos;
 	private MultipartFile[] boFiles;
-	private List<Integer> deleteFileNoList; 
+	private int[] deleteFileNos; 
 	private List<FileVO> fileList;
 	private List<ReplyVO> replyList;
 

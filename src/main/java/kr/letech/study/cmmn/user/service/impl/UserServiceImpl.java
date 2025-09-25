@@ -18,6 +18,7 @@ import kr.letech.study.cmmn.user.dao.UserDAO;
 import kr.letech.study.cmmn.user.service.IUserService;
 import kr.letech.study.cmmn.user.vo.UserAuthVO;
 import kr.letech.study.cmmn.user.vo.UserVO;
+import kr.letech.study.cmmn.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,9 +54,14 @@ public class UserServiceImpl implements IUserService {
 	@Transactional
 	@Override
 	public void insertUser(UserVO userVO){
+		if(StringUtils.isBlank(userVO.getUserId())) {
+			return;
+		}
 		// 입력받은 비밀번호 암호화처리 후 셋팅
-		String encodedPw = passwordEncoder.encode(userVO.getUserPw());
-		userVO.setUserPw(encodedPw);
+		if(StringUtils.isNotBlank(userVO.getUserPw())) {
+			String encodedPw = passwordEncoder.encode(userVO.getUserPw());
+			userVO.setUserPw(encodedPw);
+		}
 		
 		// 파일 존재할시 파일 등록 후 fileGrpId 맵핑
 		MultipartFile[] boFiles = userVO.getBoFiles();
@@ -127,7 +133,8 @@ public class UserServiceImpl implements IUserService {
 			//권한 추가 혹은 수정
 			UserAuthVO authVO = new UserAuthVO();
 			authVO.setUserId(userVO.getUserId());
-			authVO.setRgstId(userVO.getUserId());
+			authVO.setRgstId(UserUtils.getUserId());
+			authVO.setUpdtId(UserUtils.getUserId());
 			authVO.setUpdtDt(userVO.getUserId());
 			for(String auth : authList) {
 				authVO.setUserAuth(auth);

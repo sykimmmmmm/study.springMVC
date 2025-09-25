@@ -38,6 +38,11 @@
 
 		<!-- CSRF 끄기 -->
 		<s:csrf disabled="true"/>
+		
+		<!-- 세션만료시 메인페이지로 이동 로그인화면이 팝업형식이기때문에 -->
+		<s:session-management>
+			<s:concurrency-control expired-url="/" />
+		</s:session-management>
 	</s:http>
 
 	<!-- DB 연동 설정 -->

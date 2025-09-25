@@ -9,56 +9,116 @@
 <title>Insert title here</title>
 </head>
 <body>
-<form name="delForm" action="${ROOT_PATH}/cmmn/user/userDelete.do" method="POST">
-	<input type="hidden" name="userId" value="${userVO.userId}"/>
-	<input type="hidden" name="userNm" value="${userVO.userNm}"/>
-	<input type="hidden" name="fileGrpId" value="${userVO.fileGrpId}"/>
-</form>
-<c:if test="${not empty msg }">
-	<div>
-		<c:out value="${msg }"/>
-	</div>
-</c:if>
-<table>
-	<tr>
-		<td>아이디</td>
-		<td>${userVO.userId}</td>
-	</tr>
-	<tr>
-		<td>비밀번호</td>
-		<td>[protected]</td>
-	</tr>
-	<tr>
-		<td>이름</td>
-		<td>${userVO.userNm}</td>
-	</tr>
-	<tr>
-		<td>권한</td>
-		<td>
-			<c:if test="${not empty userVO.authVOList}">
-				<c:forEach items="${userVO.authVOList}" var="authVO">
-					${authVO.authNm } 
-				</c:forEach>
-			</c:if>
-		</td>
-	</tr>
-	<tr>
-		<td>사진</td>
-		<td>
-			<c:if test="${not empty userVO.fileVO}">
-				<c:set var="fileVO" value="${userVO.fileVO}"/>
-				<div>
-					<img alt="${fileVO.fileOriginNm}" src="${CONTEXT_PATH}/cmmn/file/view.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}">
-					<a href="${CONTEXT_PATH}/cmmn/file/download.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}">[다운로드]</a>
+<div class="container">
+	<form name="delForm" action="${ROOT_PATH}/cmmn/user/userDelete.do" method="POST">
+		<input type="hidden" name="userId" value="${userVO.userId}"/>
+		<input type="hidden" name="userNm" value="${userVO.userNm}"/>
+		<input type="hidden" name="fileGrpId" value="${userVO.fileGrpId}"/>
+	</form>
+	<div class="card w-50">
+		<c:set var="imgSrc" value="${RESOURCES_PATH}/dist/adminlte/dist/assets/img/avatar.png"/>
+		<c:set var="imgAlt" value="이미지 없음"/>
+		<c:if test="${not empty userVO.fileVO}">
+			<c:set var="fileVO" value="${userVO.fileVO}"/>
+			<c:set var="imgSrc" value="${CONTEXT_PATH}/cmmn/file/view.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}"/>
+			<c:set var="imgAlt" value="${fileVO.fileOriginNm}"/>
+		</c:if>
+		<div class="text-center">
+			<img src="${imgSrc}" class="card-img-top" alt="${imgAlt}" style="max-height: 250px;">
+		</div>
+		<ul class="list-group list-group-flush">
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						아이디
+					</div>
+					<div class="col">
+						${userVO.userId}
+					</div>
 				</div>
-			</c:if>
-		</td>
-	</tr>
-</table>
-<button id="updateBtn">수정</button>
-<button id="deleteBtn">삭제</button>
-<button id="listBtn">목록</button>
-
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						비밀번호
+					</div>
+					<div class="col">
+						[protected]
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						이름
+					</div>
+					<div class="col">
+						${userVO.userNm}
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						권한
+					</div>
+					<div class="col">
+						<c:if test="${not empty userVO.authVOList}">
+							<c:forEach items="${userVO.authVOList}" var="authVO">
+								<span class="badge text-bg-info">${authVO.authNm}</span> 
+							</c:forEach>
+						</c:if>
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						등록자
+					</div>
+					<div class="col">
+						${userVO.rgstId }
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						등록일시
+					</div>
+					<div class="col">
+						${userVO.rgstDt }
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						수정자
+					</div>
+					<div class="col">
+						${userVO.updtId }
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col">
+						수정일시
+					</div>
+					<div class="col">
+						${userVO.updtDt}
+					</div>
+				</div>
+			</li>
+		</ul>
+		<div class="card-body d-flex align-items-center justify-content-end gap-1">
+			<button id="updateBtn" class="btn btn-sm btn-warning" >수정</button>
+			<button id="deleteBtn" class="btn btn-sm btn-danger">삭제</button>
+			<button id="listBtn" class="btn btn-sm btn-secondary">목록</button>
+		</div>
+	</div>
+</div>
 </body>
 <script type="text/javascript">
 	const delForm = document.delForm

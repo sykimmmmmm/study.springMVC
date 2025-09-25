@@ -1,286 +1,285 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
-<style type="text/css">
-	textarea {
-		width : 500px; 
-		resize: none;
-	}
-</style>
 </head>
 <body>
+<sec:authentication property="principal.userVO.userId" var="loginUserId"/>
 <form name="delForm" action="${CONTEXT_PATH}/cmmn/board/boardDelete.do" method="POST">
 	<input type="hidden" name="boardId" value="${boardVO.boardId}"/>
 	<input type="hidden" name="fileGrpId" value="${boardVO.fileGrpId != null ? boardVO.fileGrpId : ''}"/>
 </form>
-<table border="1" >
-	<tr>
-		<td>제목</td>
-		<td>${boardVO.boardTitle}</td>
+<div class="container mt-4">
+
+  	<!-- 제목 -->
+  	<h2 class="mb-3">${boardVO.boardTitle}</h2>
+
+	<!-- 메타정보 -->
+	<table class="table table-bordered">
+		<tr>
+			<th style="width: 15%;">작성자</th>
+			<td>${boardVO.rgstId}</td>
+			<th style="width: 15%;">작성일시</th>
+			<td>${boardVO.rgstDt}</td>
 	</tr>
-	<tr>
-		<td>작성자</td>
-		<td>${boardVO.rgstId} </td>
-	</tr>
-	<tr>
-		<td>작성일시</td>
-		<td>${boardVO.rgstDt} </td>
-	</tr>
-	<tr>
-		<td>내용</td>
-		<td>${boardVO.boardContent}</td>
-	</tr>
-	<tr>
-		<td>파일</td>
-		<td>
+	</table>
+
+  	<!-- 내용 -->
+	<div class="card my-3">
+		<div class="card-body min-vh-50" style="white-space:pre-line;">${boardVO.boardContent}</div>
+	</div>
+
+	<!-- 첨부파일 -->
+	<div class="mb-3">
+		<h6>첨부파일</h6>
+		<ul class="list-group">
 			<c:if test="${not empty boardVO.fileList}">
 				<c:forEach items="${boardVO.fileList}" var="fileVO">
-					<div>
-						<p>${fileVO.fileOriginNm}</p>
-						<a href="${CONTEXT_PATH}/cmmn/file/download.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}">[다운로드]</a>
-					</div>
+					<li class="list-group-item">
+						<span>${fileVO.fileOriginNm}</span>
+						<a href="${CONTEXT_PATH}/cmmn/file/download.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}" class="link-primary">[다운로드]</a>
+					</li>
 				</c:forEach>
 			</c:if>
 			<c:if test="${empty boardVO.fileList }">
-				첨부파일 없습니다.
+				<li class="list-group-item">첨부파일이 존재하지 않습니다.</li>
 			</c:if>	
-		</td>
-	</tr>
-</table>
-<div>
-	<button id="updateBtn">수정</button>
-	<button id="deleteBtn">삭제</button>
-	<button id="listBtn">목록</button>
-</div>
-<form action="${CONTEXT_PATH}/cmmn/board/insertReply.do" method="post" name="insertReplyForm">
-	<input type="hidden" name="replyContent" />
-	<input type="hidden" name="boardId" value="${boardVO.boardId}">
-	<input type="hidden" name="replyDepth" value="1">
-</form>
-<div id="replyContent">
-	<div>
-		<p>댓글작성</p>
-		<textarea rows="3" name="replyInput" id="replyInput" placeholder="댓글을 입력해주세요"></textarea>
-		<button type="button" id="commentInsertBtn">댓글 등록</button>
+		</ul>
 	</div>
-	<c:if test="${not empty boardVO.replyList}">
-		<c:forEach items="${boardVO.replyList}" var="replyVO">
-			<div style=" border-bottom: 1px solid #777; padding-left:${((replyVO.replyDepth -1)*20)}px;"
-				 data-reply-id="${replyVO.replyId}"
-				 data-reply-depth="${replyVO.replyDepth}">
-				<div class="replyHeader">
-					<c:if test="${replyVO.replyDepth != 1}"><span>└ </span></c:if>
-					<span>${replyVO.rgstId}</span> <small>${replyVO.rgstDt}</small>
-				</div>
-				<div class="replyBody">
-					<c:if test="${replyVO.delYn eq 'Y'}">
-						<p>삭제된 댓글입니다.</p>
-					</c:if>
-					<c:if test="${replyVO.delYn eq 'N'}">
-						<p>${replyVO.replyContent }</p>
-						<div>
-							<button type="button" class="replyInsertBtn">작성</button>
-							<button type="button" class="replyUpdateBtn">수정</button>
-							<button type="button" class="replyDeleteBtn" data-reply-id="${replyVO.replyId}">삭제</button>
+	<div class="mb-3 d-flex justify-content-end align-items-center gap-1">
+		<c:if test="${boardVO.rgstId eq loginUserId}">
+			<button class="btn btn-warning" id="updateBtn">수정</button>
+			<button class="btn btn-danger" id="deleteBtn">삭제</button>
+		</c:if>
+		<button class="btn btn-secondary" id="listBtn">목록</button>
+	</div>
+  	<!-- 댓글 -->
+  	<div id="replyContent" class="mt-4">
+    	<h6>댓글</h6>
+    	<div class="mb-3">
+    		<div class="input-group">
+				<textarea class="form-control" rows="3" name="replyInput" id="replyInput" placeholder="댓글을 입력해주세요" wrap="hard"></textarea>
+				<button type="button" class="btn btn-primary btn-sm" id="commentInsertBtn">댓글 등록</button>
+    		</div>
+		</div>
+    	<ul class="list-group">
+	    	<c:if test="${not empty boardVO.replyList}">
+				<c:forEach items="${boardVO.replyList}" var="replyVO">
+					<c:set var="margin" value="${replyVO.replyDepth % 5 - 1}"/>
+					<li class="list-group-item card-body replyWrapper ms-${margin == 0 ? margin : margin + 2 }"
+						 data-reply-id="${replyVO.replyId}"
+						 data-reply-depth="${replyVO.replyDepth}">
+						<div class="replyHeader">
+							<span>${replyVO.rgstId}</span> <small class="text-muted">${replyVO.rgstDt}</small>
 						</div>
-						<div class="subReply"></div>
-					</c:if>
-				</div>
-			</div>
-		</c:forEach>
-	</c:if>
-	
+						<div class="replyBody">
+							<c:if test="${replyVO.delYn eq 'Y'}">
+								<p class="card-text">삭제된 댓글입니다.</p>
+							</c:if>
+							<c:if test="${replyVO.delYn eq 'N'}">
+								<p class="card-text" style="white-space: pre-wrap;">${replyVO.replyContent }</p>
+								<div>
+									<button type="button" class="replyInsertBtn btn btn-sm btn-primary">작성</button>
+									<c:if test="${replyVO.rgstId eq loginUserId}">
+										<button type="button" class="replyUpdateBtn btn btn-sm btn-warning">수정</button>
+										<button type="button" class="replyDeleteBtn btn btn-sm btn-danger" data-reply-id="${replyVO.replyId}">삭제</button>
+									</c:if>
+								</div>
+								<div class="subReply"></div>
+							</c:if>
+						</div>
+					</li>
+				</c:forEach>
+			</c:if>
+    	</ul>
+  	</div>
 </div>
+
+<form action="${CONTEXT_PATH}/cmmn/board/insertReply.do" method="post" name="insertReplyForm">
+	<input type="hidden" name="replyContent" required/>
+	<input type="hidden" name="boardId" value="${boardVO.boardId}" required>
+	<input type="hidden" name="replyDepth" value="1" required>
+</form>
+
 <div style="display:none;" id="replyTemplate">
-	<textarea rows="3" class="subReplyContent" placeholder="답글을 입력해주세요...."></textarea>
-	<button type="button" class="confirmBtn">등록</button>
-	<button type="button" class="cancleBtn">취소</button>
+	<textarea rows="3" class="subReplyContent form-control" placeholder="답글을 입력해주세요...." wrap="hard"></textarea>
+	<button type="button" class="confirmBtn btn btn-sm btn-primary">등록</button>
+	<button type="button" class="cancleBtn btn btn-sm btn-secondary">취소</button>
 </div>
 
 </body>
 <script type="text/javascript">
-	const delForm = document.delForm
-	const updateBtn = document.getElementById("updateBtn");
-	const deleteBtn = document.getElementById("deleteBtn");
-	const listBtn = document.getElementById("listBtn");
-	
-	updateBtn.addEventListener("click",function(){
-		window.location.href="${CONTEXT_PATH}/cmmn/board/boardUpdateForm.do?boardId=${boardVO.boardId}";
-	})
-	
-	deleteBtn.addEventListener("click",function(){
-		if(confirm("정말로 삭제하시겠습니까?")){
-			delForm.submit();
-		}
-	})
-	
-	listBtn.addEventListener("click",function(){
-		window.location.href="${Context_PATH}/cmmn/board/boardList.do";
-	})
-	
-	// 댓글 관련 기능
-	const insertReplyForm = document.insertReplyForm;
-	const replyContentEl = insertReplyForm.replyContent;
-	const replyDepthEl = insertReplyForm.replyDepth;
-	const replyInputEl = document.getElementById("replyInput"); // 댓글 작성
-	const replyBodys = document.querySelectorAll(".replyBody");
-	const commentInsertBtn = document.getElementById("commentInsertBtn"); // 댓글 작성
-	const replyTemplate = document.getElementById("replyTemplate"); // 댓글 작성
-	
-	commentInsertBtn.addEventListener("click",function(){
-		let replyContent = replyInputEl.value;
-		if(replyContent == null || replyContent.trim() == ''){
-			alert("내용을 입력해주세요");
-			return false;
-		}
-		if(confirm("댓글을 등록하시겠습니까?")){
-			replyContentEl.value = replyContent;
-			insertReplyForm.submit();
-		}
-	})
-	
-	let activeEl = null;
-	for(let replyBody of replyBodys){
-		replyBody.addEventListener("click",function(e){
+	$(function(){
+		const $delForm = $("form[name='delForm']");
+		const $updateBtn = $("#updateBtn");
+		const $deleteBtn = $("#deleteBtn");
+		const $listBtn = $("#listBtn");
+		
+		$updateBtn.on("click",function(){
+			location.href="${CONTEXT_PATH}/cmmn/board/boardUpdateForm.do?boardId=${boardVO.boardId}";
+		});
+		
+		$deleteBtn.on("click",function(){
+			if(confirm("정말로 삭제하시겠습니까?")){
+				$delForm.submit();
+			}
+		})
+		
+		$listBtn.on("click",function(){
+			location.href="${Context_PATH}/cmmn/board/boardList.do";
+		})
+		
+		// 댓글 관련 기능
+		const $insertReplyForm = $("form[name='insertReplyForm']");
+		const $replyContent = $("input[name='replyContent']");
+		const $replyDepth = $("input[name='replyDepth']");
+		const $replyInput = $("#replyInput")// 댓글 작성
+		const $replyBodys = $(".replyBody");
+		const $commentInsertBtn = $("#commentInsertBtn"); // 댓글 작성
+		const $replyTemplate = $("#replyTemplate"); // 댓글 작성
+		
+		$commentInsertBtn.on("click",function(){
+			let replyContent = $replyInput.val();
+			if(replyContent == null || replyContent.trim() == ''){
+				alert("내용을 입력해주세요");
+				return false;
+			}
+			if(confirm("댓글을 등록하시겠습니까?")){
+				$replyContent.val(replyContent);
+				$insertReplyForm.submit();
+			}
+		})
+		
+		let activeEl = null;
+		$replyBodys.on("click",function(e){
 			let target = e.target;
-			
-			if(target.classList.contains("replyInsertBtn")){
-				let subReply = e.target.parentElement.nextElementSibling;
-				subReply.dataset.name = '등록';
-				subReply.dataset.content = '';
-				openSubReply(subReply);
-				console.dir(subReply);
+			if($(target).hasClass("replyInsertBtn")){
+				const $subReply = $(target).parent().next(".subReply");
+				$subReply.data("name","등록");
+				$subReply.data("content","");
+				openSubReply($subReply);
 				
 			}
-			if(target.classList.contains("replyUpdateBtn")){
-				let subReply = e.target.parentElement.nextElementSibling;
-				let content = e.target.parentElement.previousElementSibling.innerText;
-				subReply.dataset.name = '수정';
-				subReply.dataset.content = content;
-				openSubReply(subReply)
+			if($(target).hasClass("replyUpdateBtn")){
+				const $subReply = $(target).parent().next(".subReply");
+				let content = $(target).parent().prev("p").text();
+				$subReply.data("name","수정");
+				$subReply.data("content",content);
+				openSubReply($subReply)
 			}
-			if(target.classList.contains("replyDeleteBtn")){
-				console.dir(target.dataset);
-				let replyId = target.dataset.replyId;
-
-				const inputDOM = document.createElement("input");
-				inputDOM.type = 'hidden';
-				inputDOM.name = 'replyId';
-				inputDOM.value = replyId;
-				insertReplyForm.append(inputDOM);
-				insertReplyForm.action = "${CONTEXT_PATH}/cmmn/board/deleteReply.do";
+			if($(target).hasClass("replyDeleteBtn")){
+				let replyId = $(target).data("replyId");
+				
+				const inputDOM = $(`<input type="hidden" name="replyId" value="\${replyId}">`);
+				$insertReplyForm.append(inputDOM);
+				$insertReplyForm.attr("action","${CONTEXT_PATH}/cmmn/board/deleteReply.do");
 				
 				if(confirm("삭제하시겠습니까?")){
-					insertReplyForm.submit();
+					$insertReplyForm.submit();
 				}
 			}
 			// 답글 작성 및 수정
-			if(target.classList.contains("confirmBtn")){
-				const replyWrapper = target.parentElement.parentElement.parentElement;
-				console.dir(replyWrapper.dataset)
-				let replyId = replyWrapper.dataset.replyId
-				let replyDepth = replyWrapper.dataset.replyDepth
-				const ta = activeEl.querySelector(".subReplyContent");
-// 				console.log(ta.value)
-				replyContentEl.value = ta.value;
-				let name = activeEl.dataset.name;
+			if($(target).hasClass("confirmBtn")){
+				const $replyWrapper = $(target).closest(".replyWrapper");
+				
+				let replyId = $replyWrapper.data("replyId");
+				let replyDepth = $replyWrapper.data("replyDepth");
+				
+				const ta = activeEl.children(".subReplyContent");
+				
+				$replyContent.val(ta.val());
+				let name = activeEl.data("name");
 				if(confirm(name+"하시겠습니까?")){
-					const replyParentIdEl = insertReplyForm.replyParentId;
+					const $replyParentId = $insertReplyForm.children("input[name='replyParentId']");
 					if(name == '등록'){
-						if(replyParentIdEl == null){
-							const inputDOM = document.createElement("input");
-							inputDOM.type = 'hidden';
-							inputDOM.name = 'replyParentId';
-							inputDOM.value = replyId;
-							insertReplyForm.append(inputDOM);
+						if($replyParentId.length == 0){
+							const inputDOM = $(`<input type='hidden' name='replyParentId' value='\${replyId}'>`);
+							$insertReplyForm.append(inputDOM);
 						}
-						replyDepthEl.value = +replyDepth + 1;
-						insertReplyForm.action = "${CONTEXT_PATH}/cmmn/board/insertReply.do"
-						insertReplyForm.submit();
+						$replyDepth.val(+replyDepth + 1);
+						$insertReplyForm.attr("action","${CONTEXT_PATH}/cmmn/board/insertReply.do");
+						$insertReplyForm.submit();
 						
 					}else if(name == '수정'){
-						if(replyParentIdEl != null){
-							replyParentIdEl.remove();
+						if($replyParentId != null){
+							$replyParentId.remove();
 						}
-						const inputDOM = document.createElement("input");
-						inputDOM.type = 'hidden';
-						inputDOM.name = 'replyId';
-						inputDOM.value = replyId;
-						insertReplyForm.append(inputDOM);
-						insertReplyForm.action = "${CONTEXT_PATH}/cmmn/board/updateReply.do";
+						const inputDOM = $(`<input type='hidden' name='replyId' value='\${replyId}'>`);
+						$insertReplyForm.append(inputDOM);
+						$insertReplyForm.attr("action","${CONTEXT_PATH}/cmmn/board/updateReply.do");
 					
-						insertReplyForm.submit();
+						$insertReplyForm.submit();
 					}
 				}
 			}
 			// 답글 작성 및 수정 취소
-			if(target.classList.contains("cancleBtn")){
-				const replyWrapper = target.parentElement.parentElement.parentElement;
-				console.dir(replyWrapper.dataset)
-				let replyId = replyWrapper.dataset.replyId
-				let replyDepth = replyWrapper.dataset.replyDepth
+			if($(target).hasClass("cancleBtn")){
+				const $replyWrapper = $(target).closest(".replyWrapper");
+				let replyId = $replyWrapper.data("replyId");
+				let replyDepth = $replyWrapper.data("replyDepth");
 				
 				closeActiveSubReply();
 				
-				const replyParentIdEl = insertReplyForm.replyParentId;
-				if(replyParentIdEl != null){
-					replyParentIdEl.remove();
+				const $replyParentId = $insertReplyForm.children("input[name='replyParentId']");
+				if($replyParentId.length > 0){
+					$replyParentId.remove();
 				}
-				replyDepthEl.value = 1;
-				replyContentEl.value = '';
+				$replyDepth.val("1");
+				$replyContent.val('');
 			}
 			
 		})
-	}
-	
-	function openSubReply(subReplyEl){
-		if(activeEl && activeEl == subReplyEl){
-			let name = activeEl.dataset.name;
-			let content = activeEl.dataset.content;
-			const confirmBtn = activeEl.querySelector(".confirmBtn");
-			confirmBtn.innerText = name;
+		
+		function openSubReply(subReplyEl){
+			if(activeEl && activeEl == subReplyEl){
+				let name = activeEl.data("name");
+				let content = activeEl.data("content");
+				const confirmBtn = activeEl.children(".confirmBtn");
+				confirmBtn.text(name);
+				
+				const ta = activeEl.children(".subReplyContent");
+				if(content != null && content != ''){
+					ta.val(content);
+				}else{
+					ta.val("");
+				}
+				ta.focus();
+				return;
+			}
+			closeActiveSubReply();
 			
-			const ta = activeEl.querySelector(".subReplyContent");
-			if(content != null && content != ''){
-				ta.value = content;
+			subReplyEl.html($replyTemplate.html())
+			let name = subReplyEl.data("name");
+			let content = subReplyEl.data("content");
+			
+			const confirmBtn = subReplyEl.children(".confirmBtn");
+			confirmBtn.text(name);
+			
+			const ta = subReplyEl.children(".subReplyContent");
+			if(content != ''){
+				ta.val(content);
 			}else{
-				ta.value = '';
+				ta.val('');
 			}
 			ta.focus();
-			return;
-		}
-		closeActiveSubReply();
-		
-		subReplyEl.innerHTML = replyTemplate.innerHTML;
-		let name = subReplyEl.dataset.name;
-		let content = subReplyEl.dataset.content;
-		
-		const confirmBtn = subReplyEl.querySelector(".confirmBtn");
-		confirmBtn.innerText = name;
-		
-		const ta = subReplyEl.querySelector(".subReplyContent");
-		if(content != ''){
-			ta.value = content;
-		}else{
-			ta.value = '';
-		}
-		ta.focus();
-		
-		activeEl = subReplyEl;
-	}
-	
-	function closeActiveSubReply(){
-		if(activeEl == null){
-			return;
+			
+			activeEl = subReplyEl;
 		}
 		
-		activeEl.innerHTML = '';
-		activeEl = null;
-	}
+		function closeActiveSubReply(){
+			if(activeEl == null){
+				return;
+			}
+			
+			activeEl.html("");
+			activeEl = null;
+		}
+	})
+		
 </script>
 </html>

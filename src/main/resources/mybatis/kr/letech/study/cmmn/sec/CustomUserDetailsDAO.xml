@@ -2,15 +2,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO">
-
-	<select id="selectUser" resultType="userVO">
+	<resultMap type="userVO" id="userMap">
+		<id property="userId" column="USER_ID"/>
+		<result property="userPw" column="USER_PW"/>
+		<result property="userNm" column="USER_NM"/>
+		<result property="delYn" column="DEL_YN"/>
+		<result property="fileGrpId" column="FILE_GRP_ID"/>
+		<association property="fileVO" resultMap="fileMap"/>
+	</resultMap>
+	
+	<resultMap type="kr.letech.study.cmmn.file.vo.FileVO" id="fileMap">
+			<id property="fileGrpId" column="FILE_GRP_ID"/>
+			<id property="fileNo" column="FILE_NO"/>
+			<result property="fileOriginNm" column="FILE_ORIGIN_NM"/>
+			<result property="fileSaveNm" column="FILE_SAVE_NM"/>
+			<result property="fileSize" column="FILE_SIZE"/>
+			<result property="fileDiv" column="FILE_DIV"/>
+			<result property="rgstDt" column="FILE_RGST_DT"/>
+	</resultMap>
+	
+	<select id="selectUser" resultMap="userMap">
 		/* kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO.selectUser(userId) */
-		SELECT USER_ID
-			 , USER_PW
-			 , USER_NM
-		  FROM TB_USER
+		SELECT A.USER_ID
+			 , A.USER_PW
+			 , A.USER_NM
+			 , B.FILE_GRP_ID
+			 , B.FILE_NO
+		  FROM TB_USER A
+		  LEFT OUTER JOIN CMMN_FILES B ON (A.FILE_GRP_ID = B.FILE_GRP_ID AND B.DEL_YN = 'N')
 		 WHERE USER_ID = #{userId}
-		   AND DEL_YN = 'N'
+		   AND A.DEL_YN = 'N'
 	</select>
 	<select id="selectUserAuthList" resultType="string">
 		/* kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO.selectUserAuthList(userId) */

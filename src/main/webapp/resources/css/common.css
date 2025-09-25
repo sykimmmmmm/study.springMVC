@@ -15,11 +15,14 @@
 .Header, .Footer{
 	height: 8em;
 }
-
+.content{
+	display : flex;
+	align-items : stretch;
+}
 .SideBar{
 	width: 10%;
 /* 	height: 600px; */
-	height: 73vh;
+	height: auto;
 	background-color: #FFBB00;
 	float: left;
 }
@@ -27,7 +30,8 @@
 .page_content{
 	width: 90%;
 /* 	height: 600px; */
-	height: 73vh;
+	min-height : 73vh;
+	height: 100%;
 	background-color: #EAEAEA;
 	float: left;
 }
@@ -39,3 +43,8 @@
 .Footer{
 	background-color: #FF00DD;
 }
+
+.min-vh-50 {
+	min-height: 50vh;
+}
+

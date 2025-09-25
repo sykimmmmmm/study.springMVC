@@ -85,10 +85,10 @@ public class BoardServiceImpl implements IBoardService{
 	@Transactional
 	@Override
 	public void updateBoard(BoardVO boardVO) {
-		List<Integer> deleteFileNoList = boardVO.getDeleteFileNoList();
+		int[] deleteFileNos = boardVO.getDeleteBoardNos();
 		// 특정 파일 삭제
-		if(deleteFileNoList != null && !deleteFileNoList.isEmpty()) {
-			for(int fileNo : deleteFileNoList) {
+		if(deleteFileNos != null && deleteFileNos.length > 0) {
+			for(int fileNo : deleteFileNos) {
 				FileVO fileVO = new FileVO();
 				fileVO.setFileGrpId(boardVO.getFileGrpId());
 				fileVO.setFileNo(fileNo);
@@ -124,7 +124,9 @@ public class BoardServiceImpl implements IBoardService{
 			}
 		// 상세 페이지에서 삭제
 		}else {
-			
+			if(boardVO.getBoardId() == 0) {
+				return;
+			}
 			if(StringUtils.isNotBlank(boardVO.getFileGrpId())) {
 				fileService.deleteFileAll(boardVO.getFileGrpId());
 			}

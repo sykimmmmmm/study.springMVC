@@ -11,51 +11,31 @@
 	if ("${loginFailMsg}" != '') {
 		alert("${loginFailMsg}");
 	}
-
-	document.addEventListener("DOMContentLoaded",function(){
-		const loginForm = document.loginForm;
-		const userIdDom = loginForm.userId;
-		const userPwDom = loginForm.userPw;
-		const loginBtn = document.getElementById("loginBtn");
-		
-		loginBtn.addEventListener("click",function(){
-			let userId = userIdDom.value;
-			let userPw = userPwDom.value;
-			
-			if(isEmpty(userId)){
-				alert("아이디를 입력하세요");
-				userIdDom.focus();
-				return false;
-			}
-			if(isEmpty(userPw)){
-				alert("비밀번호를 입력하세요");
-				userPwDom.focus();
-				return false;
-			}
-			
-			loginForm.submit();
-		})
-		
-		function isEmpty(str){
-			return str == null || str.trim() == ''
-		}
-		
-	})
 </script>
 </head>
-<body>
-	<form action="${CONTEXT_PATH}/cmmn/sec/loginProc.do" method="post" name="loginForm">
-		<table>
-			<tr>
-				<td>아이디 : </td>
-				<td> <input type="text" name="userId"/> </td>
-			</tr>
-			<tr>
-				<td>비밀번호 : </td>
-				<td> <input type="password" name="userPw"/> </td>
-			</tr>
-		</table>
-		<button type="button" id="loginBtn">로그인</button>
-	</form>
+<body class="login-page bg-body-secondary">
+	<div class="login-box">
+		<div class="card">
+	        <div class="card-body login-card-body">
+	          <p class="login-box-msg">Sign in to start your session</p>
+	          <form action="${CONTEXT_PATH}/cmmn/sec/loginProc.do" method="post">
+	            <div class="input-group mb-3">
+	              <div class="input-group-text"><span class="bi bi-envelope"></span></div>
+	              <input type="text" class="form-control" name="userId" placeholder="아이디" required/>
+	            </div>
+	            <div class="input-group mb-3">
+	              <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
+	              <input type="password" class="form-control" name="userPw" placeholder="비밀번호" required/>
+	            </div>
+	            <div class="col">
+	              <div class="d-grid gap-2">
+	                <button type="submit" class="btn btn-primary">로그인</button>
+	              </div>
+	            </div>
+	          </form>
+	        </div>
+	        <!-- /.login-card-body -->
+      	</div>
+    </div>
 </body>
 </html>

@@ -63,6 +63,10 @@
 		<result property="userNm" column="USER_NM"/>
 		<result property="delYn" column="DEL_YN"/>
 		<result property="fileGrpId" column="FILE_GRP_ID"/>
+		<result property="rgstId" column="USER_RGST_ID"/>
+		<result property="rgstDt" column="USER_RGST_DT"/>
+		<result property="updtId" column="USER_UPDT_ID"/>
+		<result property="updtDt" column="USER_UPDT_DT"/>
 		<association property="fileVO" resultMap="fileMap"/>
 		<collection property="authVOList" resultMap="authVOMap" />
 	</resultMap>
@@ -89,6 +93,10 @@
 			 , A.USER_PW
 			 , A.USER_NM
 			 , A.DEL_YN
+			 , A.RGST_ID AS USER_RGST_ID
+			 , A.RGST_DT AS USER_RGST_DT
+			 , A.UPDT_ID AS USER_UPDT_ID
+			 , A.UPDT_DT AS USER_UPDT_DT
 			 , B.USER_AUTH
 			 , B.CD_NM AS AUTH_NM
 			 , C.FILE_GRP_ID

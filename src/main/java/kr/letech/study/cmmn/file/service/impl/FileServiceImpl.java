@@ -237,16 +237,8 @@ public class FileServiceImpl implements IFileService {
 			if(!file.exists()) {
 				return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
 			}
-			// 해당 파일 mimetype 찾기
-			int dotIndex = originNm.lastIndexOf('.');
 			
-			String formatName = "";
-			
-			if(dotIndex != -1) {
-				formatName = originNm.substring(dotIndex+1).toLowerCase();
-			}
-			
-			MediaType mType = this.getMediaType(formatName);
+			MediaType mType = this.getMediaType(originNm);
 			
 			// 파일 읽어오기
 			in = new FileInputStream(file);
@@ -280,12 +272,14 @@ public class FileServiceImpl implements IFileService {
 			FileVO targetVO = this.selectFileOne(fileVO);
 			if(targetVO != null) {
 				String path = this.makeFilePath(targetVO);
+				
 				File file = new File(path);
 				if(!file.exists()) {
 					entity = new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
 				}else {
 					HttpHeaders headers = new HttpHeaders();
-					headers.setContentType(MediaType.IMAGE_PNG);
+					MediaType mType = this.getMediaType(targetVO.getFileOriginNm()); 
+					headers.setContentType(mType);
 					
 					in = new FileInputStream(file);
 					
@@ -355,14 +349,24 @@ public class FileServiceImpl implements IFileService {
 	 * @param formatName
 	 * @return
 	 */
-	private MediaType getMediaType(String formatName) {
-		if(formatName != null && !formatName.isEmpty()) {
+	private MediaType getMediaType(String originNm) {
+		// 해당 파일 mimetype 찾기
+		int dotIndex = originNm.lastIndexOf('.');
+		
+		String formatName = "";
+		
+		if(dotIndex != -1) {
+			formatName = originNm.substring(dotIndex+1).toLowerCase();
+		}
+		
+		if(StringUtils.isNotBlank(formatName)) {
 			formatName = formatName.toLowerCase();
 			switch (formatName) {
 				case "jpg":
 				case "jpeg": return MediaType.IMAGE_JPEG;
 				case "png":  return MediaType.IMAGE_PNG;
 				case "gif":  return MediaType.IMAGE_GIF;
+				case "svg":  return MediaType.valueOf("image/svg+xml");
 				case "pdf":  return MediaType.APPLICATION_PDF;
 				case "doc":
 				case "docx": return MediaType.valueOf("application/msword"); // MS Word

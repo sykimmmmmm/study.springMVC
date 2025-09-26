@@ -7,7 +7,11 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +48,7 @@ public class UserServiceImpl implements IUserService {
 	private final UserDAO userDAO;
 	private final IFileService fileService;
 	private final PasswordEncoder passwordEncoder;
+	private final UserDetailsService userDetailsService;
 	
 	private final String FILE_DIV = "user";
 	
@@ -142,7 +147,15 @@ public class UserServiceImpl implements IUserService {
 				userDAO.mergeUserAuth(authVO);
 			}
 		 }
-		
+		// 헤더의 프로필이미지 동기화 및 권한을 반영 하기위한 authentication 갱신
+		if(userVO.getUserId().equals(UserUtils.getUserId())) {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			UserDetails updatedUser = userDetailsService.loadUserByUsername(userVO.getUserId());
+			
+			UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(updatedUser, auth.getCredentials(), updatedUser.getAuthorities());
+			
+			SecurityContextHolder.getContext().setAuthentication(newAuth);
+		}
 	}
 	
 	@Transactional

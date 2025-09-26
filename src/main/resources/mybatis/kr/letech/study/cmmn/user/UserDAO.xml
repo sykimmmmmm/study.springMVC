@@ -186,42 +186,4 @@
 			   UPDT_DT = NOW() 
 	</insert>
 	
-	
-	<!-- 삭제쪽 분리 -->
-	<insert id="mergeUserAuth2" parameterType="userVO">
-		/** kr.letech.study.cmmn.user.dao.UserDAO.mergeUserAuth -- KSY */
-			UPDATE TB_USER_AUTH
-			   SET DEL_YN = 'Y'
-				 , UPDT_ID = #{updtId}
-				 , UPDT_DT = NOW()
-		     WHERE USER_ID = #{userId}
-			   AND USER_AUTH IN (SELECT CD 
-		   						   FROM TB_CD 
-		   						  WHERE CD_GRP='AUTH'
-		   						  );
-			INSERT INTO TB_USER_AUTH 
-			(
-				   USER_ID
-				 , USER_AUTH
-				 , RGST_ID
-				 , RGST_DT
-				 , UPDT_ID
-				 , UPDT_DT
-				 , DEL_YN
-			)
-			VALUES 
-			(
-				   #{userId}
-				 , #{auth}
-				 , #{rgstId}
-				 , NOW()
-				 , #{rgstId}
-				 , NOW()
-				 , 'N'
-			)
-			ON DUPLICATE KEY UPDATE
-				DEL_YN = 'N',
-			   UPDT_ID = #{updtId},
-			   UPDT_DT = NOW()
-	</insert>
 </mapper>

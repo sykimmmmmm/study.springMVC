@@ -63,4 +63,13 @@ public interface IFileService {
 	 */
 	ResponseEntity<byte[]> imagePreview(FileVO fileVO);
 
+//	/**
+//	 * @param boFiles
+//	 * @param fileGrpId
+//	 * @param fILE_DIV
+//	 * @param deleteFileNos
+//	 * @return 
+//	 */
+//	String insertOrUpdateFile(MultipartFile[] boFiles, String fileGroupId, String fileDiv, int[] deleteFileNos);
+
 }

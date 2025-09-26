@@ -36,15 +36,13 @@ public class FileController {
 	@ResponseBody
 	@RequestMapping(value = "/download.do" , method = RequestMethod.GET)
 	public ResponseEntity<byte[]> fileDownload(FileVO fileVO){
-		ResponseEntity<byte[]> entity = fileService.downloadFile(fileVO);
-		return entity;
+		return fileService.downloadFile(fileVO);
 	}
 	
 	@ResponseBody
 	@RequestMapping(value = "/view.do", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> imagePreview(FileVO fileVO){
-		ResponseEntity<byte[]> entity = fileService.imagePreview(fileVO);
-		return entity;
+		return fileService.imagePreview(fileVO);
 	}
 	
 }

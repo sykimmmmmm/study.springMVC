@@ -5,6 +5,7 @@ package kr.letech.study.cmmn.user.service.impl;
 
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,7 +66,7 @@ public class UserServiceImpl implements IUserService {
 		
 		// 파일 존재할시 파일 등록 후 fileGrpId 맵핑
 		MultipartFile[] boFiles = userVO.getBoFiles();
-		if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
+		if(!ArrayUtils.isEmpty(boFiles) && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
 			String fileGrpId = fileService.insertFile(boFiles,null,this.FILE_DIV);
 			userVO.setFileGrpId(fileGrpId);
 		}
@@ -80,7 +81,7 @@ public class UserServiceImpl implements IUserService {
 			UserAuthVO authVO = new UserAuthVO();
 			authVO.setUserId(userVO.getUserId());
 			authVO.setRgstId(userVO.getUserId());
-			authVO.setUpdtDt(userVO.getUserId());
+			authVO.setUpdtId(userVO.getUserId());
 			for(String auth : authList) {
 				authVO.setUserAuth(auth);
 				userDAO.mergeUserAuth(authVO);
@@ -103,7 +104,7 @@ public class UserServiceImpl implements IUserService {
 		MultipartFile[] boFiles = userVO.getBoFiles();
 		log.info("boFiles : {}",boFiles);
 		if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
-			// 기존에 존재하던 파일이 있는경우 파일 삭제
+//			 기존에 존재하던 파일이 있는경우 파일 삭제
 			if(StringUtils.isNotBlank(userVO.getDeleteFileNo())) {
 				FileVO fileVO = new FileVO();
 				fileVO.setFileGrpId(userVO.getFileGrpId());

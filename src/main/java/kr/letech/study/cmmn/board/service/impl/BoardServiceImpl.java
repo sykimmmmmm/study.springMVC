@@ -5,6 +5,7 @@ package kr.letech.study.cmmn.board.service.impl;
 
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,11 +71,11 @@ public class BoardServiceImpl implements IBoardService{
 	public void insertBoard(BoardVO boardVO) {
 		MultipartFile[] boFiles = boardVO.getBoFiles();
 		// 파일이 있거나 해당파일의 이름이 '' 이 아닐시 파일서비스 호출 후 파일 그룹번호 반환하기 
-		if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
+		if(!ArrayUtils.isEmpty(boFiles) && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
 			String fileGrpId = fileService.insertFile(boFiles, null, this.FILE_DIV);
 			boardVO.setFileGrpId(fileGrpId);
 		}
-		
+			
 		boardDAO.insertBoard(boardVO);
 	}
 	
@@ -86,7 +87,7 @@ public class BoardServiceImpl implements IBoardService{
 	@Override
 	public void updateBoard(BoardVO boardVO) {
 		int[] deleteFileNos = boardVO.getDeleteBoardNos();
-		// 특정 파일 삭제
+//		// 특정 파일 삭제
 		if(deleteFileNos != null && deleteFileNos.length > 0) {
 			for(int fileNo : deleteFileNos) {
 				FileVO fileVO = new FileVO();
@@ -95,9 +96,9 @@ public class BoardServiceImpl implements IBoardService{
 				fileService.deleteFileOne(fileVO);
 			}
 		}
-		// 파일이 있을 시 파일 추가
+//		// 파일이 있을 시 파일 추가
 		MultipartFile[] boFiles = boardVO.getBoFiles();
-		if(boFiles != null && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
+		if(!ArrayUtils.isEmpty(boFiles) && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
 			String fileGrpId = fileService.insertFile(boFiles, boardVO.getFileGrpId(), FILE_DIV);
 			boardVO.setFileGrpId(fileGrpId);
 		}

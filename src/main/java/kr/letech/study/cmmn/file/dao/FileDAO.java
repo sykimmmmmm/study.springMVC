@@ -48,4 +48,15 @@ public interface FileDAO {
 	 */
 	void deleteFileAll(FileVO fileVO);
 
+	/**
+	 * @param fileVO
+	 */
+	void mergeFile(FileVO fileVO);
+
+	/**
+	 * @param fileGrpId
+	 * @return
+	 */
+	int selectNextFileNo(String fileGrpId);
+
 }

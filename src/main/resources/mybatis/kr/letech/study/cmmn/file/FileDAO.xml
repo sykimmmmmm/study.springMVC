@@ -82,4 +82,47 @@
 		     , UPDT_DT = NOW()
 		 WHERE FILE_GRP_ID = #{fileGrpId}
 	</update>
+	
+	<!-- 사용 안함 -->
+	<insert id="mergeFile" parameterType="kr.letech.study.cmmn.file.vo.FileVO">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.mergeFile */
+		INSERT INTO CMMN_FILES
+		(
+			  FILE_GRP_ID
+			, FILE_NO
+			, FILE_ORIGIN_NM
+			, FILE_SAVE_NM
+			, FILE_SIZE
+			, FILE_DIV
+			, RGST_ID
+			, RGST_DT
+			, UPDT_ID
+			, UPDT_DT
+			, DEL_YN
+		)
+		VALUES
+		(
+			  #{fileGrpId}
+			, #{fileNo}
+			, #{fileOriginNm}
+			, #{fileSaveNm}
+			, #{fileSize}
+			, #{fileDiv}
+			, #{rgstId}
+			, NOW()
+			, #{updtId}
+			, NOW()
+			, 'N'			
+		) ON DUPLICATE KEY UPDATE
+			  UPDT_ID = #{updtId}
+			, UPDT_DT = NOW()
+			, DEL_YN = 'Y'
+	</insert>
+	<!-- 사용 안함 -->
+	<select id="selectNextFileNo" parameterType="string" resultType="int">
+		/* kr.letech.study.cmmn.file.dao.FileDAO.selectNextFileNo */
+		SELECT IFNULL(MAX(FILE_NO),0)+1 
+		  FROM CMMN_FILES 
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+	</select>
 </mapper>

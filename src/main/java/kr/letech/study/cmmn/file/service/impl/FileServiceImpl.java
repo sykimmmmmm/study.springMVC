@@ -64,40 +64,31 @@ public class FileServiceImpl implements IFileService {
 	 */
 	@Override
 	public String insertFile(MultipartFile[] boFiles,String fileGroupId, String fileDiv) {
-		String uploadPath = basePath + "/" + fileDiv + "/" +dateFormat.format(new Date());
-		String fileGrpId = null;
+		// 업로드경로 생성 및 폴더생성
+		String uploadPath = this.makeUploadPathAndMkdirs(fileDiv);
+		// null 여부에따른 신규 생성 or 재사용
+		String fileGrpId = StringUtils.isBlank(fileGroupId) ? UUID.randomUUID().toString() : fileGroupId;
+		// 현재 로그인중인 유저아이디가져오기
+		String userId = UserUtils.getUserId();
 		
-		File directory = new File(uploadPath);
-		if(!directory.exists()) {
-			directory.mkdirs();
-		}
-		// fileGroupId 가 NULL로 들어오면 가지고있는 fileGroupId 가 존재하지 않음
-		// fileGroupId 신규 생성
-		if(StringUtils.isBlank(fileGroupId)) {
-			fileGrpId = UUID.randomUUID().toString();
-			
-		}else {
-			fileGrpId = fileGroupId;
-		}
-		
-		FileVO fileVO = new FileVO();
 		try {
 			for(MultipartFile file : boFiles) {
 				if(StringUtils.isEmpty(file.getOriginalFilename())) {
 					continue;
 				}
-				String saveNm = UUID.randomUUID().toString();
-				File saveFile = new File(uploadPath+"/"+saveNm);
-				FileUtils.copyInputStreamToFile(file.getInputStream(), saveFile);
 				
+				String saveNm = UUID.randomUUID().toString();
+				this.saveFileToDisk(file,uploadPath,saveNm);
+				
+				FileVO fileVO = new FileVO();
 				String originNm = file.getOriginalFilename();
 				fileVO.setFileGrpId(fileGrpId);
 				fileVO.setFileOriginNm(originNm);
 				fileVO.setFileSaveNm(saveNm);
 				fileVO.setFileDiv(fileDiv);
 				fileVO.setFileSize(file.getSize());
-				fileVO.setRgstId(UserUtils.getUserId());
-				fileVO.setUpdtId(UserUtils.getUserId());
+				fileVO.setRgstId(userId);
+				fileVO.setUpdtId(userId);
 				fileDAO.insertFile(fileVO);
 			}
 		} catch (IOException e) {
@@ -106,7 +97,84 @@ public class FileServiceImpl implements IFileService {
 		return fileGrpId;
 	}
 	
-	
+//	@Override
+//	public String insertOrUpdateFile(MultipartFile[] boFiles, String fileGroupId, String fileDiv, int[] deleteFileNos) {
+//		if (ArrayUtils.isEmpty(boFiles) && ArrayUtils.isEmpty(deleteFileNos)) {
+//	        // 파일 관련 동작 없으면 null 반환
+//	        return fileGroupId; // 또는 null
+//	    }
+//		// null 여부에따른 신규 생성 or 재사용
+//		String fileGrpId = StringUtils.isBlank(fileGroupId) ? UUID.randomUUID().toString() : fileGroupId;
+//		// 현재 로그인중인 유저아이디가져오기
+//		String userId = UserUtils.getUserId();
+//		boolean deleteFlag = false;
+//		try {
+//			if("user".equals(fileDiv)) {
+//				if(!ArrayUtils.isEmpty(boFiles) && StringUtils.isNotBlank(boFiles[0].getOriginalFilename()) && !ArrayUtils.isEmpty(deleteFileNos)) {
+//					deleteFlag = true;
+//				}
+//			}else if("board".equals(fileDiv)) {
+//				if(!ArrayUtils.isEmpty(deleteFileNos)) {
+//					deleteFlag = true;
+//				}
+//			}
+//			if(deleteFlag) {
+//				for(int deleteFileNo : deleteFileNos) {
+//					FileVO fileVO = new FileVO();
+//					fileVO.setFileGrpId(fileGrpId);
+//					fileVO.setFileNo(deleteFileNo);
+//					fileVO.setUpdtId(userId);
+//					fileVO.setFileOriginNm("");
+//					fileVO.setFileSaveNm("");
+//					fileVO.setFileDiv("");
+//					fileDAO.mergeFile(fileVO);
+//				}
+//			}
+//			mergeNewFile(boFiles,fileGrpId,fileDiv,userId);
+//		
+//			
+//		} catch (IOException e) {
+//			log.error("파일 처리중 에러 발생 {}", e.getStackTrace());
+//			throw new RuntimeException("파일 처리중 에러 발생");
+//		}
+//		return fileGrpId;
+//	}
+//	
+//	/**
+//	 * @param boFiles
+//	 * @param fileGroupId
+//	 * @param fileDiv
+//	 * @param userId 
+//	 * @throws IOException 
+//	 */
+//	private void mergeNewFile(MultipartFile[] boFiles, String fileGrpId, String fileDiv, String userId) throws IOException {
+//		if(ArrayUtils.isEmpty(boFiles) || StringUtils.isBlank(boFiles[0].getOriginalFilename())) {
+//			return;
+//		}
+//		// 업로드경로 생성 및 폴더생성
+//		String uploadPath = this.makeUploadPathAndMkdirs(fileDiv);
+//		for(MultipartFile file : boFiles) {
+//			if(StringUtils.isBlank(file.getOriginalFilename())) {
+//				continue;
+//			}
+//			
+//			String saveNm = UUID.randomUUID().toString();
+//			this.saveFileToDisk(file,uploadPath,saveNm);
+//			
+//			String originNm = file.getOriginalFilename();
+//			FileVO fileVO = new FileVO();
+//			fileVO.setFileGrpId(fileGrpId);
+//			fileVO.setFileOriginNm(originNm);
+//			fileVO.setFileSaveNm(saveNm);
+//			fileVO.setFileDiv(fileDiv);
+//			fileVO.setFileSize(file.getSize());
+//			fileVO.setRgstId(userId);
+//			fileVO.setUpdtId(userId);
+//			fileDAO.mergeFile(fileVO);
+//		}
+//		
+//	}
+
 	/**
 	 * 파일 그룹번호에 해당하는 모든 파일 논리삭제
 	 * @param fileGrpId
@@ -253,7 +321,34 @@ public class FileServiceImpl implements IFileService {
 		
 		return sb.toString();
 	}
+	/**
+	 * 파일 업로드경로 생성 및 폴더생성
+	 * @param fileDiv 폴더 구분자
+	 * @return
+	 */
+	private String makeUploadPathAndMkdirs(String fileDiv) {
+		String uploadPath = basePath + "/" + fileDiv + "/" +dateFormat.format(new Date());
+		
+		File directory = new File(uploadPath);
+		if(!directory.exists()) {
+			directory.mkdirs();
+		}
+
+		return uploadPath;
+	}
 	
+	/**
+	 * 실제 디스크에 파일 업로드
+	 * @param file
+	 * @param uploadPath
+	 * @param saveNm
+	 * @throws IOException 
+	 */
+	private void saveFileToDisk(MultipartFile file, String uploadPath, String saveNm) throws IOException {
+		File saveFile = new File(uploadPath + "/" + saveNm);
+		FileUtils.copyInputStreamToFile(file.getInputStream(), saveFile);
+	}
+
 	/**
 	 * 확장자에 따라 미디어타입 가져오기
 	 * 모르면 MediaType.APPLICATION_OCTET_STREAM 반환

@@ -24,7 +24,9 @@
 			<c:set var="imgAlt" value="${fileVO.fileOriginNm}"/>
 		</c:if>
 		<div class="text-center">
-			<img src="${imgSrc}" class="card-img-top" alt="${imgAlt}" style="max-height: 250px;">
+			<a href="${CONTEXT_PATH}/cmmn/file/download.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}" style="cursor: pointer;">
+				<img src="${imgSrc}" class="card-img-top" alt="${imgAlt}" style="max-width:250px; max-height: 250px; object-fit:cover;">
+			</a>
 		</div>
 		<ul class="list-group list-group-flush">
 			<li class="list-group-item">

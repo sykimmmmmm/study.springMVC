@@ -72,12 +72,6 @@ public interface UserDAO {
 	 * @param authVO
 	 */
 	void mergeUserAuth(UserAuthVO authVO);
-
-	/**
-	 * @param userVO
-	 */
-	void mergeUserAuth2(UserVO userVO);
-
 	/**
 	 * @param userVO
 	 */

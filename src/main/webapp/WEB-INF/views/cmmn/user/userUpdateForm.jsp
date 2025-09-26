@@ -15,6 +15,7 @@
           <form action="${ROOT_PATH}/cmmn/user/userUpdate.do" method="POST" enctype="multipart/form-data" name="updateForm">
 			<input type="hidden" name="fileGrpId" value="${userVO.fileGrpId}">
 			<input type="hidden" name="deleteFileNo" value="${userVO.fileVO != null ? userVO.fileVO.fileNo : ''}">
+			
             <div class="input-group mb-3">
               	<div class="input-group-text"><span class="bi bi-person"></span></div>
               	<input type="text" class="form-control" name="userId" id="userId" placeholder="아이디" value="${userVO.userId}" readonly/>
@@ -33,8 +34,10 @@
 	            <div id="previewBox" class="form-control">
 					<c:if test="${not empty userVO.fileVO}">
 						<c:set var="fileVO" value="${userVO.fileVO}"/>
-						<img class="img-thumbnail" alt="${fileVO.fileOriginNm}" src="${CONTEXT_PATH}/cmmn/file/view.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}">
+						<c:set var="imgSrc" value="${CONTEXT_PATH}/cmmn/file/view.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}"/>
+						<c:set var="imgAlt" value="${fileVO.fileOriginNm}"/>
 					</c:if>
+						<img class="img-thumbnail" alt="${imgAlt}" src="${imgSrc}">
 					<div class="btn-group">
 						<button type="button" id="imgUpdtBtn" class="btn btn-sm btn-warning">수정</button>
 						<button type="button" id="imgResetBtn" class="btn btn-sm btn-info">이미지초기화</button>
@@ -85,6 +88,8 @@
 		let imgSrcBak = "";
 		if("${userVO.fileVO}" != ""){
 			imgSrcBak = "${CONTEXT_PATH}/cmmn/file/view.do?fileGrpId=${userVO.fileVO.fileGrpId}&fileNo=${userVO.fileVO.fileNo}"
+		}else{
+			$previewImg.addClass("d-none");
 		}
 		$imgUpdtBtn.on("click",function(){
 			$("#boFiles").click();

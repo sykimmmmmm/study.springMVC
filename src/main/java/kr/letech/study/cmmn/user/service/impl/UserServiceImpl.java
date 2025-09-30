@@ -5,8 +5,8 @@ package kr.letech.study.cmmn.user.service.impl;
 
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,9 +59,13 @@ public class UserServiceImpl implements IUserService {
 		return userDAO.selectUserList(userVO);
 	}
 	
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void insertUser(UserVO userVO){
+		boolean restSuccess = false;
+		UserVO rollbackUser = null;
+		String fileGrpId = null;
+		
 		if(StringUtils.isBlank(userVO.getUserId())) {
 			return;
 		}
@@ -79,21 +83,26 @@ public class UserServiceImpl implements IUserService {
 		// 파일 존재할시 파일 등록 후 fileGrpId 맵핑
 		MultipartFile[] boFiles = userVO.getBoFiles();
 		if(!ArrayUtils.isEmpty(boFiles) && StringUtils.isNotBlank(boFiles[0].getOriginalFilename())) {
-			String fileGrpId = fileService.insertFile(boFiles,null,this.FILE_DIV);
+			fileGrpId = fileService.insertFile(boFiles,null,this.FILE_DIV);
 			userVO.setFileGrpId(fileGrpId);
 		}
-			
-		// 유저 정보 등록
-//		userDAO.insertUser(userVO);
+		
+		rollbackUser = this.restTemplateService.findUserOnly(userVO.getUserId());
+		if(rollbackUser != null) {
+			throw new RuntimeException("이미 존재하는 사용자");
+		}
 		// rest호출로 유저정보 등록해보기
 		int response = restTemplateService.insertOrUpdateUser(userVO);
+		if(response <= 0) {
+			throw new RuntimeException();
+		}else {
+			restSuccess = true;
+		}
 		
-		log.info("{}",response);
-		
-		if(response > 0) {
+		try {	
 			// 체크된 권한 가져와서 등록하기
 			List<String> authList = userVO.getAuthList();
-			if(!authList.isEmpty() || authList.size() > 0) {
+			if(authList != null && !authList.isEmpty()) {
 				//권한 등록
 				UserAuthVO authVO = new UserAuthVO();
 				authVO.setUserId(userVO.getUserId());
@@ -106,11 +115,18 @@ public class UserServiceImpl implements IUserService {
 				}
 				
 			}
-			
-		}else {
-			throw new RuntimeException();
+		} catch (Exception e) {
+			if(restSuccess) {
+				if(rollbackUser == null) {
+					rollbackUser = new UserVO();
+					rollbackUser.setUserId(userVO.getUserId());
+				}
+				restTemplateService.rollbackUser(rollbackUser);
+			}
+			fileService.deleteFileAll(fileGrpId);
+			throw e;
 		}
-	
+			
 	}
 	
 	@Override
@@ -120,12 +136,12 @@ public class UserServiceImpl implements IUserService {
 		return vo;
 	}
 	
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void updateUser(UserVO userVO) {
-		boolean checkUser = false;
+		boolean restSuccess = false;
 		UserVO rollbackUser = this.restTemplateService.findUserOnly(userVO.getUserId());
-		try {
+		
 			// 업로드할 파일 이 있는지 확인 후 기존 파일 삭제 및 신규 파일 등록
 			MultipartFile[] boFiles = userVO.getBoFiles();
 			log.info("boFiles : {}",boFiles);
@@ -147,8 +163,6 @@ public class UserServiceImpl implements IUserService {
 				String encodedPw = this.passwordEncoder.encode(userVO.getUserPw());
 				userVO.setUserPw(encodedPw);
 			}
-			// 유저 정보 업데이트
-//		userDAO.updateUser(userVO);
 			
 			// 수정자id 설정
 			userVO.setUpdtId(userVO.getUserId());
@@ -158,28 +172,30 @@ public class UserServiceImpl implements IUserService {
 			
 			if(response <= 0) {
 				throw new RuntimeException();
+			}else {
+				// 수정 완료
+				restSuccess = true;
 			}
-			// 수정 완료
-			checkUser = true;
 			
-			// 유저 권한 업데이트
-			List<String> authList = userVO.getAuthList();
-			if(!authList.isEmpty() || authList.size() > 0) {
-				
-				//권한 전부 삭제 처리
-				userVO.setUpdtId(userVO.getUserId());
-				userDAO.deleteUserAuth(userVO);
-				
-				//권한 추가 혹은 수정
-				UserAuthVO authVO = new UserAuthVO();
-				authVO.setUserId(userVO.getUserId());
-				authVO.setRgstId(UserUtils.getUserId());
-				authVO.setUpdtId(UserUtils.getUserId());
-				authVO.setUpdtDt(userVO.getUserId());
-				for(String auth : authList) {
-					authVO.setUserAuth(auth);
-					userDAO.mergeUserAuth(authVO);
-				}
+			try {
+				// 유저 권한 업데이트
+				List<String> authList = userVO.getAuthList();
+				if(!authList.isEmpty() || authList.size() > 0) {
+					
+					//권한 전부 삭제 처리
+					userVO.setUpdtId(userVO.getUserId());
+					userDAO.deleteUserAuth(userVO);
+					
+					//권한 추가 혹은 수정
+					UserAuthVO authVO = new UserAuthVO();
+					authVO.setUserId(userVO.getUserId());
+					authVO.setRgstId(UserUtils.getUserId());
+					authVO.setUpdtId(UserUtils.getUserId());
+					authVO.setUpdtDt(userVO.getUserId());
+					for(String auth : authList) {
+						authVO.setUserAuth(auth);
+						userDAO.mergeUserAuth(authVO);
+					}
 			}
 			// 헤더의 프로필이미지 동기화 및 권한을 반영 하기위한 authentication 갱신
 			if(userVO.getUserId().equals(UserUtils.getUserId())) {
@@ -190,9 +206,8 @@ public class UserServiceImpl implements IUserService {
 				
 				SecurityContextHolder.getContext().setAuthentication(newAuth);
 			}
-			throw new RuntimeException();
 		} catch (RuntimeException e) {
-			if(checkUser) {
+			if(restSuccess) {
 				restTemplateService.rollbackUser(rollbackUser);
 				// 헤더의 프로필이미지 동기화 및 권한을 반영 하기위한 authentication 갱신
 				if(userVO.getUserId().equals(UserUtils.getUserId())) {
@@ -211,27 +226,30 @@ public class UserServiceImpl implements IUserService {
 	@Transactional
 	@Override
 	public void deleteUser(UserVO userVO) {
-		boolean checkUser = false;
+		boolean restSuccess = false;
 		UserVO rollbackUser = this.restTemplateService.findUserOnly(userVO.getUserId());
+		
+		userVO.setUpdtId(userVO.getUserId());
+		String fileGrpId = userVO.getFileGrpId();
+		// 파일 삭제
+		fileService.deleteFileAll(fileGrpId);
+		// 권한 삭제
+		userDAO.deleteUserAuth(userVO);
+		// 유저 정보 삭제
+		userVO.setDelYn("Y");
 		try {
-			userVO.setUpdtId(userVO.getUserId());
-			String fileGrpId = userVO.getFileGrpId();
-			// 파일 삭제
-			fileService.deleteFileAll(fileGrpId);
-			// 권한 삭제
-			userDAO.deleteUserAuth(userVO);
-			// 유저 정보 삭제
-//			userDAO.deleteUser(userVO);
-			userVO.setDelYn("Y");
 			int status = restTemplateService.updateOrDeleteUser(userVO);
+			
 			if(status <= 0) {
 				throw new RuntimeException();
+			}else {
+				restSuccess = true;
 			}
-			checkUser = true;
+			
 			// 컨텍스트 정보 제거 로그아웃처리
 			SecurityContextHolder.clearContext();
 		} catch (RuntimeException e) {
-			if(checkUser) {
+			if(restSuccess) {
 				restTemplateService.rollbackUser(rollbackUser);
 			}
 			throw e;

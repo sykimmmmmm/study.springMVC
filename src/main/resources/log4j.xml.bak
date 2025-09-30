@@ -80,13 +80,13 @@
 	</logger>
 	<!-- 데이터베이스 관련 주요 이벤트 감사(audit) <- ResultSet을 제외한 모든것들 로그를 포착 -->
 	<logger name="jdbc.audit" additivity="false"> 
-		<level value="warn"/>  
+		<level value="OFF"/>  
 		<appender-ref ref="console"/> 
 <!-- 		<appender-ref ref="fileLogger"/> -->
 	</logger> 
 	<!-- ResultSet 호출에 관한 정보 (결과 처리 과정 등) 로그로 남깁 -->
 	<logger name="jdbc.resultset" additivity="false">
-		<level value="warn" />
+		<level value="OFF" />
 		<appender-ref ref="console"/> 
 <!-- 		<appender-ref ref="fileLogger"/> -->
 	</logger>

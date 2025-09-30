@@ -17,7 +17,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -64,7 +64,7 @@ public class FileServiceImpl implements IFileService {
 	 * @param fileGroupId 파일그룹아이디(없을시 Null)
 	 * @param fileDiv 해당 파일을 저장하는 폴더를 구분하기위한 폴더명 
 	 */
-	@Transactional(propagation = Propagation.REQUIRED)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
 	public String insertFile(MultipartFile[] boFiles,String fileGroupId, String fileDiv) {
 		// 업로드경로 생성 및 폴더생성

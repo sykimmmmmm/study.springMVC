@@ -24,7 +24,11 @@
 			<c:set var="imgAlt" value="${fileVO.fileOriginNm}"/>
 		</c:if>
 		<div class="text-center">
-			<a href="${CONTEXT_PATH}/cmmn/file/download.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}" style="cursor: pointer;">
+			<c:set var="imgDownHref" value="#"/>
+			<c:if test="${not empty userVO.fileVO }">
+				<c:set var="imgDownHref" value="${CONTEXT_PATH}/cmmn/file/download.do?fileGrpId=${fileVO.fileGrpId}&fileNo=${fileVO.fileNo}"/>
+			</c:if>
+			<a href="${imgDownHref}" style="cursor: pointer;">
 				<img src="${imgSrc}" class="card-img-top" alt="${imgAlt}" style="max-width:250px; max-height: 250px; object-fit:cover;">
 			</a>
 		</div>

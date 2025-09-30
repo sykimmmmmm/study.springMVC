@@ -12,12 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import kr.letech.study.cmmn.user.vo.UserVO;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +46,6 @@ public class RestTemplateService {
 	 * @param userVO
 	 * @return
 	 */
-	@Transactional
 	public int insertOrUpdateUser(UserVO userVO) {
 		// url
 		URI uri = UriComponentsBuilder.fromUriString(BASE_URL)
@@ -87,7 +85,6 @@ public class RestTemplateService {
 	 * @param userVO
 	 * @return
 	 */
-	@Transactional
 	public int updateOrDeleteUser(UserVO userVO) {
 		// url
 		URI uri = UriComponentsBuilder.fromUriString(BASE_URL)
@@ -223,7 +220,6 @@ public class RestTemplateService {
 	/**
 	 * @param rollbackUser
 	 */
-	@Transactional
 	public void rollbackUser(UserVO rollbackUser) {
 		// url
 		URI uri = UriComponentsBuilder.fromUriString(BASE_URL)

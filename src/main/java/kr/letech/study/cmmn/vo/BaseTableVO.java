@@ -3,7 +3,7 @@
  */
 package kr.letech.study.cmmn.vo;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
 import lombok.Setter;

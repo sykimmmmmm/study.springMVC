@@ -12,14 +12,14 @@
 		</layout>
 	</appender>
 	
-	<appender name="fileLogger" class="org.apache.log4j.FileAppender">
-		<param name="Target" value="System.out" />
-		<param name="file" value="D:/z/logfile.log"/>
-		<param name="DatePattern" value="'.'yyyy-MM-dd" />
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{HH:mm:ss} %-5p: %c - %m%n" />
-		</layout>
-	</appender>
+<!-- 	<appender name="fileLogger" class="org.apache.log4j.FileAppender"> -->
+<!-- 		<param name="Target" value="System.out" /> -->
+<!-- 		<param name="file" value="D:/z/logfile.log"/> -->
+<!-- 		<param name="DatePattern" value="'.'yyyy-MM-dd" /> -->
+<!-- 		<layout class="org.apache.log4j.PatternLayout"> -->
+<!-- 			<param name="ConversionPattern" value="%d{HH:mm:ss} %-5p: %c - %m%n" /> -->
+<!-- 		</layout> -->
+<!-- 	</appender> -->
 	
 	<!-- Application Loggers -->
 	<logger name="kr.letech.study">
@@ -41,6 +41,15 @@
 
 	<logger name="org.springframework.web">
 		<level value="info" />
+	</logger>
+	<logger name="org.springframework.jdbc.datasource.DataSourceTransactionManager" level="info">
+		<appender-ref ref="console"/>
+	</logger>
+	<logger name="org.mybatis.spring.SqlSessionUtils" level="info">
+		<appender-ref ref="console"/>
+	</logger>
+	<logger name="org.mybatis.spring.SqlSessionTemplate" level="info">
+		<appender-ref ref="console"/>
 	</logger>
 	
 	<!-- sql logger  -->
@@ -67,25 +76,25 @@
 	<logger name="jdbc.sqlonly" additivity="false"> 
 		<level value="info"/> 
 		<appender-ref ref="console"/>
-		<appender-ref ref="fileLogger"/>
+<!-- 		<appender-ref ref="fileLogger"/> -->
 	</logger>
 	<!-- 데이터베이스 관련 주요 이벤트 감사(audit) <- ResultSet을 제외한 모든것들 로그를 포착 -->
 	<logger name="jdbc.audit" additivity="false"> 
 		<level value="warn"/>  
 		<appender-ref ref="console"/> 
-		<appender-ref ref="fileLogger"/>
+<!-- 		<appender-ref ref="fileLogger"/> -->
 	</logger> 
 	<!-- ResultSet 호출에 관한 정보 (결과 처리 과정 등) 로그로 남깁 -->
 	<logger name="jdbc.resultset" additivity="false">
 		<level value="warn" />
 		<appender-ref ref="console"/> 
-		<appender-ref ref="fileLogger"/>
+<!-- 		<appender-ref ref="fileLogger"/> -->
 	</logger>
 	<!-- SQL 쿼리 실행 후 조회된 결과 데이터를 테이블 형태로 보기 좋게 로그로 출력 -->
 	<logger name="jdbc.resultsettable" additivity="false"> 
 		<level value="info"/>  
 		<appender-ref ref="console"/> 
-		<appender-ref ref="fileLogger"/>
+<!-- 		<appender-ref ref="fileLogger"/> -->
 	</logger>
 	
 	

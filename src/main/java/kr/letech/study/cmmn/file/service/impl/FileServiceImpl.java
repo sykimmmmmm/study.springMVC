@@ -24,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.letech.study.cmmn.file.dao.FileDAO;
@@ -62,6 +64,7 @@ public class FileServiceImpl implements IFileService {
 	 * @param fileGroupId 파일그룹아이디(없을시 Null)
 	 * @param fileDiv 해당 파일을 저장하는 폴더를 구분하기위한 폴더명 
 	 */
+	@Transactional(propagation = Propagation.REQUIRED)
 	@Override
 	public String insertFile(MultipartFile[] boFiles,String fileGroupId, String fileDiv) {
 		// 업로드경로 생성 및 폴더생성
@@ -97,88 +100,11 @@ public class FileServiceImpl implements IFileService {
 		return fileGrpId;
 	}
 	
-//	@Override
-//	public String insertOrUpdateFile(MultipartFile[] boFiles, String fileGroupId, String fileDiv, int[] deleteFileNos) {
-//		if (ArrayUtils.isEmpty(boFiles) && ArrayUtils.isEmpty(deleteFileNos)) {
-//	        // 파일 관련 동작 없으면 null 반환
-//	        return fileGroupId; // 또는 null
-//	    }
-//		// null 여부에따른 신규 생성 or 재사용
-//		String fileGrpId = StringUtils.isBlank(fileGroupId) ? UUID.randomUUID().toString() : fileGroupId;
-//		// 현재 로그인중인 유저아이디가져오기
-//		String userId = UserUtils.getUserId();
-//		boolean deleteFlag = false;
-//		try {
-//			if("user".equals(fileDiv)) {
-//				if(!ArrayUtils.isEmpty(boFiles) && StringUtils.isNotBlank(boFiles[0].getOriginalFilename()) && !ArrayUtils.isEmpty(deleteFileNos)) {
-//					deleteFlag = true;
-//				}
-//			}else if("board".equals(fileDiv)) {
-//				if(!ArrayUtils.isEmpty(deleteFileNos)) {
-//					deleteFlag = true;
-//				}
-//			}
-//			if(deleteFlag) {
-//				for(int deleteFileNo : deleteFileNos) {
-//					FileVO fileVO = new FileVO();
-//					fileVO.setFileGrpId(fileGrpId);
-//					fileVO.setFileNo(deleteFileNo);
-//					fileVO.setUpdtId(userId);
-//					fileVO.setFileOriginNm("");
-//					fileVO.setFileSaveNm("");
-//					fileVO.setFileDiv("");
-//					fileDAO.mergeFile(fileVO);
-//				}
-//			}
-//			mergeNewFile(boFiles,fileGrpId,fileDiv,userId);
-//		
-//			
-//		} catch (IOException e) {
-//			log.error("파일 처리중 에러 발생 {}", e.getStackTrace());
-//			throw new RuntimeException("파일 처리중 에러 발생");
-//		}
-//		return fileGrpId;
-//	}
-//	
-//	/**
-//	 * @param boFiles
-//	 * @param fileGroupId
-//	 * @param fileDiv
-//	 * @param userId 
-//	 * @throws IOException 
-//	 */
-//	private void mergeNewFile(MultipartFile[] boFiles, String fileGrpId, String fileDiv, String userId) throws IOException {
-//		if(ArrayUtils.isEmpty(boFiles) || StringUtils.isBlank(boFiles[0].getOriginalFilename())) {
-//			return;
-//		}
-//		// 업로드경로 생성 및 폴더생성
-//		String uploadPath = this.makeUploadPathAndMkdirs(fileDiv);
-//		for(MultipartFile file : boFiles) {
-//			if(StringUtils.isBlank(file.getOriginalFilename())) {
-//				continue;
-//			}
-//			
-//			String saveNm = UUID.randomUUID().toString();
-//			this.saveFileToDisk(file,uploadPath,saveNm);
-//			
-//			String originNm = file.getOriginalFilename();
-//			FileVO fileVO = new FileVO();
-//			fileVO.setFileGrpId(fileGrpId);
-//			fileVO.setFileOriginNm(originNm);
-//			fileVO.setFileSaveNm(saveNm);
-//			fileVO.setFileDiv(fileDiv);
-//			fileVO.setFileSize(file.getSize());
-//			fileVO.setRgstId(userId);
-//			fileVO.setUpdtId(userId);
-//			fileDAO.mergeFile(fileVO);
-//		}
-//		
-//	}
-
 	/**
 	 * 파일 그룹번호에 해당하는 모든 파일 논리삭제
 	 * @param fileGrpId
 	 */
+	@Transactional
 	@Override
 	public void deleteFileAll(String fileGrpId) {
 		FileVO fileVO = new FileVO();
@@ -191,6 +117,7 @@ public class FileServiceImpl implements IFileService {
 	 * fileGrpId, fileNo을 이용 특정 파일 논리삭제
 	 * @param fileVO (fileGrpId, fileNo)
 	 */
+	@Transactional
 	@Override
 	public void deleteFileOne(FileVO fileVO) {
 		fileVO.setUpdtId(UserUtils.getUserId());
